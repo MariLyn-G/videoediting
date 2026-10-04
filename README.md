@@ -10,7 +10,7 @@ action. Instructions for Claude are in `SKILL.md`.
 Claude Code (all projects):
 
 ```bash
-git clone <this repo> ~/.claude/skills/reel-editor
+git clone https://github.com/MariLyn-G/videoediting ~/.claude/skills/reel-editor
 ```
 
 Claude Code (one project): clone into `<project>/.claude/skills/reel-editor`.
