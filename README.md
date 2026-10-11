@@ -1,9 +1,17 @@
 # reel-editor
 
 A Claude skill that edits a talking-head recording into a vertical 1080x1920
-reel: jump cuts with no dead air, word-by-word captions, punch-in zooms,
-split-screen and full-screen graphics, b-roll, and a "comment X" call to
-action. Instructions for Claude are in `SKILL.md`.
+reel in one of four styles, each measured from a reference reel:
+
+- `explainer`: word-pop captions, split-screen and full-screen graphics
+- `editorial`: brand-color magazine look, giant words behind your head,
+  typed prompt cards, karaoke captions
+- `steps`: persistent header, step chips, quiet serif captions, stickers
+- `floating`: you cut out over a blurred room, app screens floating behind you
+
+Jump cuts, captions, overlays, synthesized sound effects, music ducking and
+loudness are handled. Instructions for Claude are in `SKILL.md`; the styles,
+their sound design and example prompts are in `references/looks.md`.
 
 ## Install
 
@@ -22,13 +30,19 @@ The code environment there must have ffmpeg.
 
 - ffmpeg built with libass
 - Python 3
-- `pip install faster-whisper` for transcription (downloads a model from
-  Hugging Face on first run)
+- `pip install numpy faster-whisper mediapipe`
+  - faster-whisper (transcription) downloads a model from Hugging Face on first run
+  - mediapipe (person cutout, text behind the head) downloads a model from
+    storage.googleapis.com on first run. On a Linux server it also needs
+    `libegl1` and `libgles2`.
 
 ## Layout
 
 - `SKILL.md`: workflow Claude follows
-- `references/style-guide.md`: the style, measured from the reference reel
+- `references/looks.md`: the four styles, their sounds, and prompts to use
+- `references/style-guide.md`: detailed measurements of the explainer reference
 - `references/edit-format.md`: the `edit.json` format
-- `scripts/`: `transcribe.py`, `autocut.py`, `render.py`, `contact_sheet.sh`
-- `assets/fonts/`: Inter and Instrument Serif (SIL Open Font License)
+- `scripts/`: `transcribe.py`, `autocut.py`, `render.py`, `looks.py`,
+  `matte.py`, `sfx.py`, `contact_sheet.sh`
+- `assets/fonts/`: Inter, Instrument Serif, Playfair Display, Nunito,
+  Patrick Hand (all SIL Open Font License)

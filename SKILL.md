@@ -1,91 +1,98 @@
 ---
 name: reel-editor
-description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short in the "AI tool explainer" creator style - tight jump cuts with no dead air, word-by-word pop-in captions, alternating punch-in zooms, split-screen graphics above a presenter card, full-screen graphic and b-roll beats with italic serif captions, and a glowing "comment X" call to action. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video from a recording, or to make a video "like" a reference reel of this kind.
+description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short in one of four creator styles - "explainer" (word-pop captions, split-screen graphics), "editorial" (brand-color magazine look, giant words behind the head, typed prompt cards, karaoke captions), "steps" (persistent header, step chips, quiet serif captions, stickers) or "floating" (presenter cut out over a blurred room with app screens floating behind them). Handles jump cuts, captions, overlays, sound effects, music ducking and loudness. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video "like" a reference reel.
 ---
 
 # Reel editor
 
-Turns one talking-head recording plus a few graphics or clips into a finished
-1080x1920 reel. The style is measured from a reference reel; details are in
-`references/style-guide.md`. Read it before planning shots.
+Turns a talking-head recording plus graphics into a finished 1080x1920
+reel. Four looks, each measured from a reference reel. Read
+`references/looks.md` first, then `references/edit-format.md`.
 
-Scripts are in `scripts/` next to this file. They need `ffmpeg` (with libass)
-and Python 3. Transcription also needs `pip install faster-whisper`.
+Scripts are in `scripts/`. They need `ffmpeg` (with libass), Python 3 and
+`pip install numpy`. Transcription needs `pip install faster-whisper`
+(model from Hugging Face). Cutouts and text behind the head need
+`pip install mediapipe` (model from storage.googleapis.com).
 
 ## What this can and can't do
 
-It does reliably: silence and retake removal, 9:16 reframing, word-timed
-captions, layouts, punch-ins, text cards, music ducking, loudness to -14 LUFS.
+Reliable: silence and retake removal, reframing, word-timed captions in
+four styles, layouts, punch-ins, person cutout, text and cards behind the
+presenter, typed prompt cards, stickers, title text, synthesized sound
+effects, music ducking, loudness to -14 LUFS.
 
-It does not make motion graphics (the animated mascots in the reference were
-made by hand or with another tool). Graphics come from the user, from
-screenshots, from the built-in `card` layout, or from an image/video
-generator if one is connected (e.g. Higgsfield). Say this up front if the
-user expects animated illustrations.
+Not done: custom motion graphics (animated mascots, counters, follow cards),
+music selection, and judging which take is the best performance. Graphics
+come from the user, screenshots, the built-in cards and text, or an
+image/video generator if one is connected. Say this up front if the user
+expects animation.
 
 ## Workflow
 
-Work in a folder next to the footage, e.g. `reel/`, with `assets/` for media
-and `work/` for intermediates.
+Work in a folder next to the footage: `assets/` for media, `work/` for
+intermediates.
 
-1. **Inspect the inputs.** `ffprobe` the recording (duration, orientation,
-   fps). Look at a contact sheet to find where the face sits vertically:
-   `scripts/contact_sheet.sh raw.mp4 work/raw.jpg 5`. Set `face_y` from it
-   (fraction of frame height at the eyes; 0.3-0.4 is typical).
+1. **Pick the look.** From the user's words or reference ("like the green
+   one" = editorial). If unclear, ask, showing the four one-line
+   descriptions from `looks.md`.
 
-2. **Transcribe.** `python3 scripts/transcribe.py raw.mp4 -o work/words.json`.
-   Use `--lang` for non-English speech. If transcription can't run, ask the
-   user for a transcript or SRT and build `words.json` from it
-   (`[{"w","start","end"}]`, source seconds).
+2. **Inspect inputs.** `ffprobe` the recording. Contact sheet:
+   `scripts/contact_sheet.sh raw.mp4 work/raw.jpg 5`. Set `face_y` (eye
+   height as a fraction of the frame; 0.3-0.4 typical). Look at every asset.
 
-3. **Find the reel inside the recording.** Read the transcript. Creators
-   usually do several takes; keep the last clean take of each line and drop
-   false starts, filler ("um", "so yeah"), and repeated sentences. The reel
-   should open on the hook sentence, not on "hey guys". Target 25-45 s.
-   Then: `python3 scripts/autocut.py work/words.json -o work/cut.json
-   --start N --end M --drop a-b --drop c-d`. It prints the kept transcript
-   with **output** timecodes; plan shots against those numbers.
+3. **Transcribe.** `python3 scripts/transcribe.py raw.mp4 -o work/words.json`
+   (`--lang` for non-English). If it can't run, ask for a transcript or SRT
+   and build `words.json` from it. Fix misheard names in words.json.
 
-4. **Plan shots.** Write `edit.json` (format in `references/edit-format.md`).
-   Rules of thumb from the reference:
-   - First 1.5 s: a graphic beat (split or full) with a serif caption of the
-     hook. Never open on a plain talking head.
-   - Change the shot every 1.2-3 s. Average about 1.8 s.
-   - Alternate graphics and talking head. Consecutive talk shots get an
-     automatic punch-in on every other one, which hides jump cuts.
-   - Put a graphic on every concrete noun the viewer should see: product
-     name, numbers, lists ("a researcher, a scriptwriter, an editor"), demos.
-   - Numbers get a `card` or a split with a screenshot.
-   - Cut on word boundaries. Pick shot `end` times between words, using the
-     timecodes autocut printed.
-   - End with the CTA on a talking head for the last 2-3 s.
-   Gather or make every media file the plan references before rendering. If
-   something is missing, use a `card` instead of inventing an asset.
+4. **Cut.** Keep the last clean take of each line, drop false starts and
+   filler, open on the hook. Target 30-55 s. `python3 scripts/autocut.py
+   work/words.json -o work/cut.json --start N --end M --drop a-b`. Plan
+   against the output timecodes it prints.
 
-5. **Preview.** `python3 scripts/render.py edit.json --preview` (540x960,
-   fast). Then `scripts/contact_sheet.sh out/reel_preview.mp4 work/prev.jpg
-   0.5` and look at it. Check: captions don't cover faces or graphics, no
-   graphic is cropped, text is readable, the card shows the face, nothing
-   sits under the Instagram UI (bottom 15% and right 12% of the frame).
-   Fix edit.json and repeat.
+5. **Plan.** Write `edit.json`. Per look:
+   - explainer: change shot every 1.2-3 s; graphic on every concrete noun;
+     numbers as cards; first 1.5 s is a graphic.
+   - editorial: open on `cutout` over brand color with a typed `title`
+     behind the head; one prompt card when the user describes asking an AI;
+     a big word behind the head 2-3 times at key words; picture-in-picture
+     for proof; note box for the CTA.
+   - steps: one `header` for the whole video; a `chip` at each "step N";
+     stickers when brands are named; full-screen screen recordings.
+   - floating: `cutout` with `"bg": "blur"` for most of it; cards behind the
+     head (`"z": "behind"`) for clips; full-screen screens for steps;
+     `emphasis` for 2-4 key words.
+   Cut and place on word boundaries. Keep text out of the bottom 15% and the
+   right 12% (Instagram UI).
 
-6. **Final render.** `python3 scripts/render.py edit.json`. Check the output
-   with `ffprobe` (1080x1920, 30 fps, duration as expected) and send the
-   user the file plus a contact sheet.
+6. **Preview.** `python3 scripts/render.py edit.json --preview`, then
+   `scripts/contact_sheet.sh out/reel_preview.mp4 work/prev.jpg 0.5` and
+   look at it. Check that captions don't cover faces or graphics, behind-head
+   text is readable around the head, nothing is cropped, the cutout edge is
+   clean. Fix and repeat. The trimmed track and matte are cached between
+   renders.
 
-## Writing captions and on-screen text
+7. **Final.** `python3 scripts/render.py edit.json`. Check with `ffprobe`
+   and send the file and a contact sheet.
 
-Captions come from the transcript, 1-2 words at a time, so the words must be
-right. Fix transcription errors in `work/words.json` (product names are the
-usual problem) before running autocut. Keep the speaker's words; don't
-rewrite them. A shot can replace the transcript with its own `text` when the
-on-screen words should differ (e.g. a big number).
+## Sound
 
-## When the user gives a new reference reel
+Read the sound notes for the chosen look in `looks.md`. Music is the
+user's: ask for a file or suggest a mood and tempo to search for. Built-in
+effects are synthesized and plain; prefer library files if the user has
+them. Never add music if the user will add trending audio in Instagram.
 
-Make a contact sheet at 1 frame/s, run scene detection
+## Writing on-screen text
+
+Captions are the speaker's words; fix spelling, don't rewrite. Titles and
+behind-head words are 1-3 words, taken from what is said at that moment.
+Prompt cards show what the speaker says they typed.
+
+## New references
+
+Contact sheet at 1 frame/s, scene cuts
 (`ffmpeg -i ref.mp4 -vf "select='gt(scene,0.12)',showinfo" -f null -`), and
-compare cut rate, layouts, caption fonts, sizes and positions with
-`references/style-guide.md`. Change the constants at the top of
-`scripts/render.py` or the per-shot options to match, and tell the user what
-the reference does that this pipeline can't reproduce.
+for sound the stereo difference spectrogram
+(`ffmpeg -i ref.mp4 -lavfi "pan=mono|c0=0.5*c0-0.5*c1,showspectrumpic=s=1600x300" side.png`),
+which removes a mono voice and leaves music and effects. Add a look to
+`scripts/looks.py` and a section to `references/looks.md`. Tell the user
+what the reference does that this can't.

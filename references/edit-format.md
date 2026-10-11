@@ -5,6 +5,7 @@ All paths are relative to the folder that holds `edit.json`. All times are
 
 ```json
 {
+  "look": "editorial",
   "source": "raw/talk.mp4",
   "cut": "work/cut.json",
   "output": "out/reel.mp4",
@@ -12,63 +13,114 @@ All paths are relative to the folder that holds `edit.json`. All times are
   "fps": 30,
   "face_y": 0.33,
   "shots": [
-    {"end": 1.5, "layout": "split", "media": "assets/logo.png", "bg": "#0d1117", "caption": "serif"},
-    {"end": 3.9, "layout": "talk"},
-    {"end": 5.3, "layout": "full", "media": "assets/mascot.png", "bg": "#ffffff"},
-    {"end": 6.5, "layout": "card", "title": "62.3k", "sub": "stars on GitHub"},
-    {"end": 9.8, "layout": "split", "media": "assets/repo.png"},
-    {"end": 12.3, "layout": "talk"},
-    {"end": 15.6, "layout": "broll", "media": "assets/demo.mp4", "media_start": 4, "dim": 0.25},
+    {"end": 2.4, "layout": "cutout"},
+    {"end": 5.1, "layout": "talk"},
+    {"end": 8.0, "layout": "split", "media": "assets/repo.png"},
     {"end": null, "layout": "talk"}
   ],
-  "captions": {"max_words": 2, "max_chars": 14},
-  "cta": {"start": 33.0, "small": "comment", "big": "“Video”", "glow": "#ff7a1a"},
-  "music": {"file": "assets/track.mp3", "volume": 0.12, "duck": true},
-  "sfx": [{"file": "assets/whoosh.wav", "at": 1.5, "volume": 0.5}],
-  "loudness": -14,
-  "fonts": {"sans": "Inter ExtraBold", "heavy": "Inter Black", "serif": "Instrument Serif", "dir": null}
+  "overlays": [
+    {"type": "text", "style": "title", "text": "I didn't\nedit", "start": 0, "end": 2.4,
+     "y": 0.24, "z": "behind", "anim": "type"},
+    {"type": "prompt", "label": "to Claude", "text": "make it more aesthetic",
+     "start": 5.1, "end": 8.0},
+    {"media": "assets/timer.png", "start": 9.0, "end": 11.0, "x": 0.5, "y": 0.2, "w": 0.4}
+  ],
+  "captions": {"emphasis": ["Claude"]},
+  "cta": {"start": 33.0, "small": "comment", "big": "“EDIT”"},
+  "music": {"file": "assets/track.mp3", "volume": 0.12, "duck": true, "start": 0},
+  "sfx_auto": true,
+  "sfx": [{"sound": "boom", "at": 19.2, "volume": 0.5}],
+  "loudness": -14
 }
 ```
 
 Only `source`, `cut` and `shots` are required.
 
+## look
+
+`explainer` (default), `editorial`, `steps` or `floating`. Sets caption
+style, fonts, colors, grade and which sound effects are added. See
+`looks.md`. Override single text styles with `"styles": {"cap_main":
+{"size": 72, "color": "#ffffff"}}` (style names are in `scripts/looks.py`).
+`"grade"` overrides the look's color grade with an ffmpeg filter string, or
+`null` for none.
+
 ## Shots
 
 Each shot runs from the previous shot's `end` to its own `end`. The first
-starts at 0. The last shot always runs to the end of the reel (use
-`"end": null`). If the shots stop early, a talk shot fills the rest.
+starts at 0. The last always runs to the end (use `"end": null`).
 
 | layout | what it shows | needs |
 |---|---|---|
 | `talk` | presenter full frame | - |
-| `split` | `media` in the top 40% on `bg`, caption in the middle, presenter in a rounded card in the bottom 46% | `media` optional |
+| `cutout` | presenter cut out over `bg`: a color, or `"blur"` for a blurred copy of the room | person matte (automatic) |
+| `split` | `media` in the top 40% on `bg`, caption in the middle, presenter card in the bottom 46% | `media` optional |
 | `full` | `media` centered on `bg`, caption below | `media` |
-| `broll` | `media` fills the frame (cropped), optional darkening | `media` |
+| `broll` | `media` fills the frame (cropped) | `media` |
 | `card` | big `title` and optional `sub` on `bg` | `title` |
 
 Per-shot options:
 
-- `zoom` (talk): 1.0 = no zoom. Default alternates 1.0 / 1.15 across talk shots.
-- `bg`: hex color. Default `#ffffff` (`#0d1117` for broll). Caption color
-  follows it: dark text on light backgrounds, white on dark.
-- `caption`: `sans` (Inter, lowercase as spoken), `serif` (italic serif,
-  uppercase), or `none`. Defaults: talk/split = sans, full/broll = serif,
-  card = none.
+- `zoom` (talk, cutout): 1.0 = none. Default alternates 1.0 / 1.15.
+- `bg`: hex color or `"blur"` (cutout only).
+- `caption`: `main`, `alt` (the look's second caption style; serif caps in
+  explainer) or `none`.
 - `text`: show this text for the whole shot instead of the transcript words.
-- `media`: image (png/jpg/webp) or video. Videos loop if shorter than the shot.
-- `media_start`: seconds into a video `media` to start from.
-- `anim`: `pop` (default; scale-in and fade over 0.2 s) or `none`.
-- `dim` (broll): 0-1 black overlay so captions stay readable.
+- `media`, `media_start`, `anim` (`pop` or `none`), `dim` (broll, 0-1).
+
+## Overlays
+
+Timed elements on top of the shots. Each has `start` and `end` (null = to
+the end of the reel). Positions `x`, `y` are the center, as fractions of the
+frame width and height.
+
+- `"z": "behind"` puts the element behind the presenter on `talk` and
+  `cutout` shots (text behind the head, cards behind the shoulders). This
+  computes a person matte once per render (needs mediapipe).
+- `anim`: `pop` (default), `fade`, `slide` (rises in), `type` (text only,
+  letters appear one by one), `none`.
+- `sfx`: a built-in sound name or a file, played at `start`. Overrides the
+  automatic one.
+- `hide_captions`: true hides transcript captions while it is on screen.
+
+Types:
+
+| type | fields | notes |
+|---|---|---|
+| `text` | `text`, `style`, `size`, `color` | `\n` stacks lines tightly (`leading`, default 0.86). Styles: `title`, `title2`, `big`, `label`, `note`, `chip`, `header1`, `header2`, `cap_main`, `cap_alt` |
+| media | `media`, `w` (fraction of width), `radius` (px at 1080 wide, default 28, 0 = square), `shadow`, `media_start` | image or video. No `type` needed |
+| `prompt` | `text`, `label`, `w`, `y`, `cps` (typing speed), `box`, `accent` | chat input card that types the text, with key clicks |
+| `header` | `lines` (two strings), `y` | two-line header held for the whole video (steps look) |
+| `chip` | `text`, `y` | boxed label, e.g. "STEP 1 : Voiceover"; chime on entry |
+| `note` | `text`, `y` | boxed note, e.g. "Comment 'EDIT' and I'll send it" |
+
+## captions
+
+From the look; any key can be overridden:
+
+- `mode`: `pop` (1-2 words, scale-in), `karaoke` (3-5 words, spoken word
+  bright, rest `dim`), `phrase` (5-6 words, fade-in).
+- `max_words`, `max_chars`, `y`, `dim`.
+- `emphasis`: list of words shown in the look's accent color.
+
+## Sound
+
+- `music`: `file`, `volume` (0.08-0.15 under speech), `duck` (lower it while
+  you talk), `start` (seconds into the track). Fades in and out.
+- `sfx_auto` (default true): whooshes on graphic cuts, pops on media and
+  notes, chimes on chips and the CTA, typing clicks on prompts, bass hits on
+  titles in the editorial look.
+- `sfx`: extra sounds, `{"sound": name or file, "at": seconds, "volume"}`.
+  Built-in names: `whoosh`, `pop`, `ding`, `boom`, `click`, `riser`.
+- `loudness`: target LUFS, default -14 (what all four references measure).
 
 ## cta
 
-A two-line call to action: small serif word over a big word with a colored
-glow. Transcript captions are hidden while it is on screen. It can also be a
-list of CTAs. `y` (fraction of height, default 0.66) moves it.
+A small line over a big word: `start`, `end`, `small`, `big`, `glow`
+(color, or leave out for the look's default), `y`.
 
-## fonts
+## Other
 
-Bundled fonts (Inter, Instrument Serif; OFL) cover Latin script only. For
-Armenian, Cyrillic or other scripts, set `fonts.dir` to a folder with fonts
-that cover them and give their family names in `sans`/`heavy`/`serif`
-(check names with `fc-scan --format "%{family}\n" font.ttf`).
+- `matte_model`: `multiclass` (default, cleaner hair) or `fast`.
+- `fonts`: `{"dir": "my-fonts"}` to add fonts for other scripts (Armenian,
+  Cyrillic); then set style fonts with `styles`.
