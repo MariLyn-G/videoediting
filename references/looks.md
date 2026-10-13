@@ -172,7 +172,10 @@ Prompt:
 
 ---
 
-## punchy (reference 4, "video editors are cooked", 27 s)
+## punchy (reference 4, "video editors are cooked", 27 s) - DEFAULT
+
+The full rules for this look, including the six-beat structure and how to
+choose stickers for a new script, are in `playbook.md`.
 
 Measured:
 - Several camera setups (seated wide, close from below, standing), changing

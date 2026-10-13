@@ -14,6 +14,11 @@ Templates (sizes are designed for a 1080-wide frame):
   comment    text, placeholder          comment bar with a typed word, e.g. "EDIT"
   stat       value, unit, label         big serif number with a round badge, e.g. 100 / % / edited
   pill       text, icon                 white pill with an emoji/letter icon, e.g. a brand name
+  timeline   tracks, playhead           editing-app timeline (colored clips, waveform, playhead)
+  windowbar  title, brand, width        title bar of an app window (traffic lights, file name)
+tag takes strike: true (red line through it). checklist takes done: N (first N ticked,
+the rest grey) so a sequence of cards can tick off one by one. comment takes reply
+and reply_name for a reply bubble under the bar.
 Every template also takes: rotate (degrees), scale (1.0), color/accent overrides.
 
 Needs Chrome or Chromium. Set CHROME=/path/to/chrome if it isn't found.
@@ -88,13 +93,16 @@ def body(spec):
     t = spec["type"]
     acc = spec.get("accent", "#f3d46a")
     if t == "tag":
-        return (f'<div class="card" style="background:{spec.get("bg", "#151515")};'
+        strike = (f'<div style="position:absolute;left:-14px;right:-14px;top:46%;height:9px;'
+                  f'background:#e5352b;border-radius:5px;transform:rotate(-7deg);'
+                  f'box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>' if spec.get("strike") else "")
+        return (f'<div class="card" style="position:relative;background:{spec.get("bg", "#151515")};'
                 f'border:2px solid #2c2c2c;border-radius:16px;padding:18px 30px 16px;'
                 f'box-shadow:0 14px 30px rgba(0,0,0,.45);text-align:center">'
                 f'<div style="font:64px \'Inter Black\';color:#fff;letter-spacing:-1px;'
                 f'line-height:1">{e(spec.get("title", ""))}</div>'
                 f'<div style="font:24px \'Plex Mono\';color:#b9b9b9;margin-top:8px">'
-                f'{e(spec.get("sub", ""))}</div></div>')
+                f'{e(spec.get("sub", ""))}</div>{strike}</div>')
     if t == "receipt":
         rows = "".join(
             f'<div style="display:flex;align-items:baseline;gap:12px;font:34px \'Plex Mono\';'
@@ -138,12 +146,17 @@ def body(spec):
             inner = inner.replace("flex-end", "flex-start")
         return f'<div class="card">{inner}</div>'
     if t == "checklist":
+        done = spec.get("done", len(spec.get("items", [])))
         items = "".join(
             f'<div style="display:flex;align-items:center;gap:16px;font:32px \'Inter Medium\';'
-            f'color:#222;margin-top:14px"><span style="width:34px;height:34px;border-radius:50%;'
-            f'background:#2f8f4e;display:inline-flex;align-items:center;justify-content:center;'
-            f'color:#fff;font:24px \'Inter Black\'">&#10003;</span>{e(i)}</div>'
-            for i in spec.get("items", []))
+            f'color:{"#222" if n < done else "#b5b5b5"};margin-top:14px">'
+            f'<span style="width:34px;height:34px;border-radius:50%;box-sizing:border-box;'
+            f'background:{"#2f8f4e" if n < done else "transparent"};'
+            f'border:{"none" if n < done else "3px solid #cfcfcf"};'
+            f'display:inline-flex;align-items:center;justify-content:center;'
+            f'color:#fff;font:24px \'Inter Black\'">{"&#10003;" if n < done else ""}</span>'
+            f'{e(i)}</div>'
+            for n, i in enumerate(spec.get("items", [])))
         chip = (f'<span style="background:#d9534a;color:#fff;font:26px \'Plex Mono\';'
                 f'padding:3px 14px;border-radius:999px">{e(spec["chip"])}</span>'
                 if spec.get("chip") else "")
@@ -155,7 +168,17 @@ def body(spec):
                 f'<div style="border-top:4px solid #2f8f4e;margin:16px 0 4px;border-radius:2px"></div>'
                 f'{items}</div>')
     if t == "comment":
-        return (f'<div class="card" style="display:flex;align-items:center;gap:18px;'
+        reply = (f'<div style="margin:16px 0 0 70px;background:#fff;border-radius:22px;'
+                 f'padding:14px 22px;display:inline-block;box-shadow:0 10px 24px rgba(0,0,0,.4)">'
+                 f'<div style="font:26px \'Inter ExtraBold\';color:#111">'
+                 f'{e(spec.get("reply_name", "you"))}</div>'
+                 f'<div style="font:30px \'Inter Medium\';color:#333;margin-top:2px">'
+                 f'{e(spec["reply"])}</div>'
+                 f'<div style="display:inline-block;margin-top:10px;background:{acc};color:#111;'
+                 f'font:26px \'Inter ExtraBold\';padding:6px 16px;border-radius:999px">'
+                 f'&#128279; {e(spec.get("reply_button", "Open link"))}</div></div>'
+                 if spec.get("reply") else "")
+        return (f'<div class="card"><div style="display:flex;align-items:center;gap:18px;'
                 f'background:rgba(22,22,22,.88);border:4px solid {acc};border-radius:999px;'
                 f'padding:14px 18px 14px 16px;min-width:620px;'
                 f'box-shadow:0 12px 30px rgba(0,0,0,.45)">'
@@ -165,7 +188,7 @@ def body(spec):
                 f'{e(spec.get("text", ""))}</span>'
                 f'<span style="width:50px;height:50px;border-radius:50%;background:{acc};'
                 f'color:#222;display:inline-flex;align-items:center;justify-content:center;'
-                f'font:32px \'Inter Black\'">&#8593;</span></div>')
+                f'font:32px \'Inter Black\'">&#8593;</span></div>{reply}</div>')
     if t == "stat":
         return (f'<div class="card" style="position:relative;padding-right:60px">'
                 f'<div style="font:190px \'Instrument Serif\';color:{spec.get("color", "#111")};'
@@ -184,6 +207,51 @@ def body(spec):
                 f'display:inline-flex;align-items:center;justify-content:center;'
                 f'font:30px \'Inter Black\'">{e(spec.get("icon", (spec.get("text") or "?")[0]))}</span>'
                 f'<span style="font:44px \'Inter ExtraBold\';color:#111">{e(spec.get("text", ""))}'
+                f'</span></div>')
+    if t == "timeline":
+        colors = ["#2fb3a0", "#7b6be0", "#d9b24c", "#3aa6d9", "#e07a6b"]
+        tracks = spec.get("tracks", 4)
+        rows = ""
+        import random
+        rnd = random.Random(spec.get("seed", 3))
+        for r in range(tracks):
+            label = ["V2", "V1", "T1", "A1", "A2"][r % 5]
+            clips, x = "", 0
+            while x < 820:
+                w = rnd.randint(90, 230)
+                gap = rnd.choice([0, 0, 12, 40])
+                c = colors[(r + len(clips)) % len(colors)] if label != "A1" else "#2fb3a0"
+                wave = ("background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.35)"
+                        " 0 2px,transparent 2px 6px);" if label.startswith("A") else "")
+                clips += (f'<div style="position:absolute;left:{x + gap}px;width:{min(w, 820 - x - gap)}px;'
+                          f'top:4px;bottom:4px;background:{c};border-radius:8px;{wave}'
+                          f'opacity:.92"></div>')
+                x += w + gap
+            rows += (f'<div style="display:flex;align-items:center;gap:14px;height:52px">'
+                     f'<span style="width:44px;font:22px \'Plex Mono\';color:#9aa">{label}</span>'
+                     f'<div style="position:relative;width:820px;height:100%">{clips}</div></div>')
+        ph = spec.get("playhead", 0.4)
+        return (f'<div class="card" style="position:relative;background:rgba(20,22,26,.92);'
+                f'border:2px solid #2c3036;border-radius:18px;padding:18px 22px;'
+                f'box-shadow:0 18px 40px rgba(0,0,0,.5)">'
+                f'<div style="font:20px \'Plex Mono\';color:#7c8590;margin:0 0 8px 58px;'
+                f'letter-spacing:2px">00:00&nbsp;&nbsp;&nbsp;&nbsp;00:01&nbsp;&nbsp;&nbsp;&nbsp;'
+                f'00:02&nbsp;&nbsp;&nbsp;&nbsp;00:03&nbsp;&nbsp;&nbsp;&nbsp;00:04&nbsp;&nbsp;&nbsp;'
+                f'&nbsp;00:05</div>{rows}'
+                f'<div style="position:absolute;top:40px;bottom:14px;left:{80 + 820 * ph:.0f}px;'
+                f'width:3px;background:#fff"></div></div>')
+    if t == "windowbar":
+        w = spec.get("width", 640)
+        return (f'<div class="card" style="width:{w}px;box-sizing:border-box;background:#fbfaf7;'
+                f'border-radius:22px 22px 0 0;padding:14px 22px;display:flex;align-items:center;'
+                f'gap:10px;border-bottom:2px solid #e6e2d8">'
+                f'<span style="width:16px;height:16px;border-radius:50%;background:#ee6a5f"></span>'
+                f'<span style="width:16px;height:16px;border-radius:50%;background:#f5be4f"></span>'
+                f'<span style="width:16px;height:16px;border-radius:50%;background:#62c554"></span>'
+                f'<span style="flex:1;text-align:center;font:26px \'Plex Mono\';color:#333">'
+                f'&#9655; {e(spec.get("title", "reel.mp4"))}</span>'
+                f'<span style="font:26px \'Inter ExtraBold\';color:#222">'
+                f'<span style="color:#d97757">&#10033;</span> {e(spec.get("brand", "Claude"))}'
                 f'</span></div>')
     sys.exit(f"unknown graphic type {t!r}")
 

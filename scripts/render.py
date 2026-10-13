@@ -27,8 +27,8 @@ IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 SPLIT_CARD_H = 0.46      # presenter card height in split layout
 SPLIT_MEDIA_BOX = (0.86, 0.40, 0.25)  # media box w, h, center y
 FULL_MEDIA_BOX = (0.90, 0.50, 0.40)
-CAPTION_Y = {"split": 0.495, "full": 0.70, "card": 0.70}
-GRAPHIC_LAYOUTS = {"split", "full", "broll", "card"}
+CAPTION_Y = {"split": 0.495, "full": 0.70, "card": 0.70, "window": 0.66}
+GRAPHIC_LAYOUTS = {"split", "full", "broll", "card", "window"}
 PERSON_LAYOUTS = {"talk", "cutout"}
 PUNCH_IN = 1.15
 POP = "\\fscx86\\fscy86\\t(0,90,\\fscx100\\fscy100)"
@@ -187,7 +187,7 @@ class Reel:
         self.x264 = ["-c:v", "libx264", "-preset", "ultrafast" if preview else "medium",
                      "-crf", "23" if preview else "17", "-pix_fmt", "yuv420p"]
         self.face_y = self.e.get("face_y", 0.35)
-        self.look_name = self.e.get("look", "explainer")
+        self.look_name = self.e.get("look", "punchy")
         self.look, self.styles = looks_mod.resolve(self.look_name, self.e.get("styles"))
         self.cap = dict(self.look["captions"])
         self.cap.update(self.e.get("captions", {}))
@@ -275,6 +275,8 @@ class Reel:
                 talk_n += 1
             if lay == "card":
                 default_cap = "none"
+            elif lay == "window":
+                default_cap = "main"
             elif lay in ("full", "broll"):
                 default_cap = self.look["graphic_caption"]
             else:
@@ -284,6 +286,8 @@ class Reel:
                 s.setdefault("bg", "#0d1117")
             elif lay == "cutout":
                 s.setdefault("bg", self.look["brand"])
+            elif lay == "window":
+                s.setdefault("bg", "#efece4")
             else:
                 s.setdefault("bg", "#ffffff")
             shots.append(s)
@@ -507,12 +511,35 @@ class Reel:
             fc += f",drawbox=t=fill:c=black@{dim}[v0];" if dim else "[v0];"
         elif lay == "card":
             fc += f"{bg}[v0];"
+        elif lay == "window":
+            # The presenter playing inside an app window on a plain background.
+            cw = int(W * s.get("w", 0.6)) // 2 * 2
+            chh = int(cw * H / W) // 2 * 2
+            x = int(W * s.get("x", 0.66) - cw / 2)
+            y = int(H * s.get("y", 0.5) - chh / 2)
+            bar, bw, bh = self.graphic({"type": "windowbar", "title": s.get("title", "reel.mp4"),
+                                        "brand": s.get("brand", "Claude"),
+                                        "width": int(s.get("w", 0.6) * 1080)})
+            bar_h = int(bh * cw / bw) // 2 * 2
+            ki = add_input(["-loop", "1", "-i", self.mask(cw, chh, int(22 * self.k))])
+            bi = add_input(["-loop", "1", "-i", bar])
+            fc += (f"{bg}[bg];[0:v]scale={cw}:{chh},format=rgba[win];"
+                   f"[{ki}:v]format=gray,scale={cw}:{chh}[wm];[win][wm]alphamerge[winA];"
+                   f"[winA]split[winA][wsh];[wsh]colorchannelmixer=rr=0:gg=0:bb=0:aa=0.3,"
+                   f"gblur=sigma={16 * self.k:.1f}[wsh];"
+                   f"[bg][wsh]overlay={x}:{y + int(16 * self.k)}:shortest=1[bg1];"
+                   f"[bg1][winA]overlay={x}:{y}:shortest=1[bg2];"
+                   f"[{bi}:v]scale={cw}:{bar_h},format=rgba[bar];"
+                   f"[bg2][bar]overlay={x}:{y - bar_h + int(4 * self.k)}:shortest=1[v0];")
         else:
             sys.exit(f"unknown layout {lay!r}")
         if lay not in PERSON_LAYOUTS:
             fc = "[0:v]nullsink;" + fc if "[0:v]" not in fc else fc
 
         cur = "v0"
+        if s.get("dim") and lay in PERSON_LAYOUTS:
+            fc += f"[v0]drawbox=t=fill:c=black@{s['dim']}[v0d];"
+            cur = "v0d"
         for j, o in enumerate(front_media):
             mi = add_input(self.media_input(self.path(o["media"]), pad,
                                             o.get("media_start", 0) +

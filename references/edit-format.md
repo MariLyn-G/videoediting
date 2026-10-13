@@ -38,7 +38,8 @@ Only `source`, `cut` and `shots` are required.
 
 ## look
 
-`explainer` (default), `editorial`, `steps`, `floating` or `punchy`. Sets caption
+`punchy` (default; see `playbook.md`), `explainer`, `editorial`, `steps` or
+`floating`. Sets caption
 style, fonts, colors, grade and which sound effects are added. See
 `looks.md`. Override single text styles with `"styles": {"cap_main":
 {"size": 72, "color": "#ffffff"}}` (style names are in `scripts/looks.py`).
@@ -58,10 +59,12 @@ starts at 0. The last always runs to the end (use `"end": null`).
 | `full` | `media` centered on `bg`, caption below | `media` |
 | `broll` | `media` fills the frame (cropped) | `media` |
 | `card` | big `title` and optional `sub` on `bg` | `title` |
+| `window` | presenter playing inside an app window on `bg` (cream by default), title bar with `title` and `brand`; `w`, `x`, `y` place it | - |
 
 Per-shot options:
 
 - `zoom` (talk, cutout): 1.0 = none. Default alternates 1.0 / 1.15.
+- `dim` (talk, cutout, broll): 0-1 darkening, e.g. 0.45 as the hook turns.
 - `bg`: hex color or `"blur"` (cutout only).
 - `caption`: `main`, `alt` (the look's second caption style; serif caps in
   explainer) or `none`.
@@ -112,6 +115,13 @@ Made by `scripts/graphic.py` with headless Chrome, cached in
 | `stat` | `value`, `unit`, `label`, `color` | a big number ("100 % edited") |
 | `comment` | `text` | the comment CTA |
 | `pill` | `text`, `icon` | brand or app name with an icon letter |
+| `timeline` | `tracks`, `playhead`, `seed` | an editing timeline (topic graphic for video/editing) |
+| `windowbar` | `title`, `brand`, `width` | app window title bar (used by the `window` layout) |
+
+Extra fields: `tag` takes `strike: true` (red line through it). `checklist`
+takes `done: N` (first N ticked); place the same card with done 1, 2, 3 in
+sequence (`anim: "none"`) so it ticks off. `comment` takes `reply`,
+`reply_name`, `reply_button` for a reply bubble.
 
 All take `rotate` (degrees, small tilts like -6..6 look hand-placed) and
 `accent`. Preview one alone: `python3 scripts/graphic.py '{...}' -o g.png`.

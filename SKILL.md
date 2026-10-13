@@ -1,6 +1,6 @@
 ---
 name: reel-editor
-description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short in one of five creator styles - "explainer" (word-pop captions, split-screen graphics), "editorial" (brand-color magazine look, giant words behind the head, typed prompt cards, karaoke captions), "steps" (persistent header, step chips, quiet serif captions, stickers), "floating" (presenter cut out over a blurred room with app screens floating behind them) or "punchy" (white captions with the key word big and yellow, paper stickers, receipts, handwritten notes with arrows). Handles jump cuts, captions, overlays, sound effects, music ducking and loudness. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video "like" a reference reel.
+description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short. By default uses the "punchy" playbook from a reference reel - six-beat structure (hook, proof, relatable, cost, solution, comment CTA), white lowercase captions with the key word big and yellow, stickers generated from what the speaker says (tool tags, receipts, prices, handwritten notes with arrows, checklists, comment bar), angle changes, riser into the punchline. Also has explainer, editorial, steps and floating looks. Copies the tactics of references, never their content. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video like a reference.
 ---
 
 # Reel editor
@@ -37,9 +37,9 @@ expects animation.
 Work in a folder next to the footage: `assets/` for media, `work/` for
 intermediates.
 
-1. **Pick the look.** From the user's words or reference ("like the green
-   one" = editorial). If unclear, ask, showing the five one-line
-   descriptions from `looks.md` (five looks).
+1. **Pick the look.** `punchy` (the default playbook) unless the user names
+   another one or sends a different reference ("like the green one" =
+   editorial). Don't ask when they didn't specify.
 
 2. **Inspect inputs.** `ffprobe` the recording. Contact sheet:
    `scripts/contact_sheet.sh raw.mp4 work/raw.jpg 5`. Set `face_y` (eye
@@ -55,8 +55,9 @@ intermediates.
    against the output timecodes it prints.
 
 5. **Visual plan from the script.** Read the kept transcript as an
-   argument, not a word list. Write a beat list: one line per idea, with its
-   output time, the exact words, and the visual. Pick visuals by meaning:
+   argument, not a word list. Map it onto the playbook's six beats, then
+   write a beat list: one line per idea, with its output time, the exact
+   words, and the visual. Pick visuals by meaning:
    - a tool, app or brand is named -> `tag` or `pill` (user's logo if given)
    - money, cost, price -> `receipt` (stack several for "every video"),
      `price`

@@ -8,8 +8,9 @@ reel in one of four styles, each measured from a reference reel:
   typed prompt cards, karaoke captions
 - `steps`: persistent header, step chips, quiet serif captions, stickers
 - `floating`: you cut out over a blurred room, app screens floating behind you
-- `punchy`: white captions with the key word big and yellow, stickers
-  (tool tags, receipts, prices, handwritten notes with arrows)
+- `punchy` (default): white captions with the key word big and yellow,
+  stickers (tool tags, receipts, prices, handwritten notes with arrows), the
+  six-beat structure in `references/playbook.md`
 
 Claude reads what you say and adds the images the script calls for:
 generated stickers and cards, plus your own screenshots and clips.
@@ -45,7 +46,9 @@ The code environment there must have ffmpeg.
 ## Layout
 
 - `SKILL.md`: workflow Claude follows
-- `references/looks.md`: the four styles, their sounds, and prompts to use
+- `references/playbook.md`: the default style's rules (structure, pacing,
+  captions, stickers by meaning, sound)
+- `references/looks.md`: all five styles, their sounds, and prompts to use
 - `references/style-guide.md`: detailed measurements of the explainer reference
 - `references/edit-format.md`: the `edit.json` format
 - `scripts/`: `transcribe.py`, `autocut.py`, `render.py`, `looks.py`,
