@@ -9,6 +9,7 @@ BASE_STYLES = {
     "cap_main": dict(font="Inter ExtraBold", size=78, color="#ffffff", shadow=2.5),
     "cap_alt": dict(font="Instrument Serif", size=128, color="#ffffff", italic=True,
                     upper=True, shadow=2),
+    "cap_emph": dict(font="Inter Black", size=124, color="#f3d46a", shadow=3),
     "title": dict(font="Instrument Serif", size=170, color="#ffffff", italic=True, shadow=2),
     "title2": dict(font="Instrument Serif", size=120, color="#ff7a1a", italic=True, shadow=2),
     "big": dict(font="Inter Black", size=170, color="#ffffff", shadow=2),
@@ -103,6 +104,32 @@ LOOKS = {
             "cta_small": dict(font="Nunito Black", size=90, color="#f4f0a8", glow="#e8e070"),
             "cta_big": dict(font="Nunito Black", size=110, color="#a9d4ff", glow="#7fbfff"),
         },
+    },
+}
+
+
+LOOKS["punchy"] = {
+    # Reference 4: "video editors are cooked". White lowercase captions with the
+    # key word big and yellow, paper/LED stickers, handwritten notes with arrows.
+    "captions": dict(mode="punch", max_words=4, max_chars=22, y=0.57),
+    "graphic_caption": "main",
+    "accent": "#f3d46a",
+    "brand": "#151515",
+    "grade": "eq=contrast=1.05:saturation=0.88:gamma=0.98",
+    "styles": {
+        "cap_main": dict(font="Inter ExtraBold", size=62, color="#ffffff", shadow=3,
+                         lower=True, spacing=-1),
+        "cap_alt": dict(font="Inter ExtraBold", size=62, color="#ffffff", shadow=3,
+                        lower=True, spacing=-1),
+        "cap_emph": dict(font="Inter Black", size=132, color="#f3d46a", shadow=3,
+                         lower=True, spacing=-3),
+        "big": dict(font="Inter Black", size=230, color="#f3d46a", shadow=4, spacing=-6),
+        "title": dict(font="Inter Black", size=170, color="#ffffff", shadow=4, spacing=-4),
+        "title2": dict(font="Caveat", size=96, color="#f3d46a", shadow=2),
+        "label": dict(font="Caveat", size=80, color="#f3d46a", shadow=2),
+        "note": dict(font="Inter ExtraBold", size=46, color="#ffffff", box="#151515", pad=14),
+        "cta_small": dict(font="Inter ExtraBold", size=52, color="#ffffff", shadow=3),
+        "cta_big": dict(font="Inter Black", size=120, color="#f3d46a", shadow=3),
     },
 }
 

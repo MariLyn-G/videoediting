@@ -172,6 +172,57 @@ Prompt:
 
 ---
 
+## punchy (reference 4, "video editors are cooked", 27 s)
+
+Measured:
+- Several camera setups (seated wide, close from below, standing), changing
+  every 2-5 s, plus punch-ins.
+- Captions in the middle of the frame, white lowercase heavy sans, 2-4 words.
+  The key word of each line is on its own line, 2x bigger and yellow
+  (`#f3d46a`): "i suck at / **video editing**", "and i'm not / **techy** / at
+  all". About one big word every 2-3 s.
+- One giant yellow word for the punchline ("cooked.") with sparks.
+- Paper and gadget stickers next to the head, each tied to a word:
+  dark tool tags ("CapCut / video editor", "Premiere Pro", "DaVinci") as
+  each tool is named; invoice receipts "Video editor 1 video ... $150" that
+  stack up; a red LED price "$750 / EVERY SINGLE VIDEO".
+- Handwritten yellow notes with arrows pointing at his head ("can't edit",
+  "not techy") while he says it about himself.
+- Proof beat: the video playing in an app window on cream, with a checklist
+  card ("Using skill video-edit": transcribed, picked takes, cut, captions,
+  sound design, rendered) and a big serif "100% edited".
+- Phone mockups of result videos for "results like this".
+- Ending: comment bar with "EDIT" typed in, held to the end.
+- This reel was made with the `video-edit` skill (its checklist card says so).
+
+Sound:
+- No music bed. The voice is alone for most of the reel.
+- A 3 s rising noise build (riser, with crackle) from about 1.7 s that lands
+  on "cooked." at 4.7 s.
+- A short pop or swish each time a sticker appears: about 12 between 8 s
+  and 25 s, densest in the tool tags and receipts (15-21 s).
+
+Skill reproduces: two-size captions (`mode: "punch"` with `emphasis`
+phrases), giant word (`big` text), all the stickers as generated graphics
+(`tag`, `receipt`, `price`, `note`, `checklist`, `stat`, `comment`), phone
+cards as media overlays, pops on every sticker, a riser into the giant
+word (automatic in this look). Not reproduced: the sparks,
+the app window with video playing inside it (use a `split` or a screenshot).
+
+Record: 2-3 framings of the same script (seated, close from below,
+standing), mid-tone room. Say tool names and prices out loud; each one gets a
+sticker.
+
+Prompt:
+> Use the reel-editor skill, look "punchy". Edit my video into a reel under
+> [30] seconds. Read what I say and add stickers for the ideas: a tag for
+> every tool I name, receipts and a price for anything about cost, a
+> handwritten note with an arrow at my head when I talk about myself, a
+> checklist card for the process. Big yellow words: [word], [word]. Giant
+> "[punchline.]" when I say it. End with a comment bar typing "[WORD]".
+
+---
+
 ## Where to get sounds
 
 - Music: Epidemic Sound (what reference 2 uses), Artlist, CapCut's library,

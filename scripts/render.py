@@ -16,6 +16,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import graphic as graphic_mod  # noqa: E402
 import looks as looks_mod  # noqa: E402
 import sfx as sfx_mod  # noqa: E402
 
@@ -73,6 +74,23 @@ def ass_time(t):
 
 def ass_text(s):
     return s.replace("\\", "/").replace("{", "(").replace("}", ")").replace("\n", "\\N")
+
+
+def norm(w):
+    return w.lower().strip(".,!?;:\"'“”‘’")
+
+
+def find_phrase(words, phrases):
+    """(start, end) index of the longest emphasized phrase inside `words`, or None."""
+    lw = [norm(w) for w in words]
+    best = None
+    for p in phrases:
+        pw = [norm(x) for x in p.split()]
+        n = len(pw)
+        for i in range(len(lw) - n + 1):
+            if lw[i:i + n] == pw and (best is None or n > best[1] - best[0]):
+                best = (i, i + n)
+    return best
 
 
 def esc_filter_path(p):
@@ -138,7 +156,11 @@ class Ass:
         if raw or "{" in text:
             t = text
         else:
-            t = ass_text(text.upper() if s.get("upper") else text)
+            if s.get("upper"):
+                text = text.upper()
+            elif s.get("lower"):
+                text = text.lower()
+            t = ass_text(text)
         pos = f"\\an5\\pos({int(x)},{int(y)})"
         if s.get("glow"):
             g = int(10 * self.k)
@@ -176,6 +198,7 @@ class Reel:
         self.fonts_dir = self.path(fonts_dir) if fonts_dir else FONTS
         self._mask_cache = {}
         self._typing = []
+        self._graphics = {}
         self._size_cache = {}
 
     def path(self, p):
@@ -270,10 +293,28 @@ class Reel:
                           "caption": "main", "bg": "#ffffff"})
         return shots
 
+    def graphic(self, spec):
+        """Render a graphic spec to a PNG once; returns (path, width, height)."""
+        h = hashlib.sha1(json.dumps(spec, sort_keys=True).encode()).hexdigest()[:12]
+        if h not in self._graphics:
+            out = os.path.join(self.work, "graphics", f"{spec.get('type', 'g')}_{h}.png")
+            if os.path.exists(out):
+                w, hh = self.media_size(out)
+            else:
+                w, hh = graphic_mod.make(spec, out)
+            self._graphics[h] = (out, w, hh)
+        return self._graphics[h]
+
     def overlays(self):
         out = []
         for o in self.e.get("overlays", []):
             o = dict(o)
+            if "graphic" in o:
+                path, gw, _ = self.graphic(o["graphic"])
+                o["media"] = path
+                o.setdefault("w", gw / 1080 * o.get("scale", 1.0))
+                o.setdefault("radius", 0)
+                o.setdefault("shadow", False)
             o.setdefault("start", 0.0)
             if o.get("end") is None:
                 o["end"] = self.duration
@@ -612,13 +653,18 @@ class Reel:
                     return s
             return shots[-1]
 
+        bigrams = set()
+        for p in cap.get("emphasis", []):
+            ws = [norm(x) for x in p.split()]
+            bigrams.update(zip(ws, ws[1:]))
         groups, cur = [], []
         for w in self.words:
             if any(a <= w["start"] < b for a, b in hide):
                 continue
             if cur:
                 text = " ".join(x["w"] for x in cur + [w])
-                if (len(cur) >= max_words or len(text) > max_chars
+                inside_phrase = (norm(cur[-1]["w"]), norm(w["w"])) in bigrams
+                if not inside_phrase and (len(cur) >= max_words or len(text) > max_chars
                         or w["start"] - cur[-1]["end"] > 0.25
                         or cur[-1]["w"][-1:] in ".,!?;:"
                         or shot_at(w["start"]) is not shot_at(cur[0]["start"])):
@@ -673,6 +719,25 @@ class Reel:
                 return " ".join(parts)
 
             start = group[0]["start"]
+            if mode == "punch":
+                k = self.k
+                sm = self.styles[style]["size"]
+                big = self.styles["cap_emph"]["size"]
+                gap = (big * 0.47 + sm * 0.55) * k
+                ph = find_phrase(words, self.cap.get("emphasis", []))
+                if ph is None:
+                    ass.text(start, end, style, W / 2, y, " ".join(words), tags=POP + base)
+                    continue
+                before, mid, after = words[:ph[0]], words[ph[0]:ph[1]], words[ph[1]:]
+                if before:
+                    ass.text(start, end, style, W / 2, y - gap, " ".join(before),
+                             tags=POP + base)
+                t_mid = group[ph[0]]["start"]
+                ass.text(t_mid, end, "cap_emph", W / 2, y, " ".join(mid), tags=POP)
+                if after:
+                    ass.text(group[ph[1]]["start"], end, style, W / 2, y + gap,
+                             " ".join(after), tags=POP + base)
+                continue
             if mode == "karaoke":
                 for j, w in enumerate(group):
                     ts = start if j == 0 else w["start"]
@@ -758,6 +823,11 @@ class Reel:
                 elif o["type"] == "chip":
                     ev.append({"sound": "ding", "at": o["start"], "volume": 0.3})
                 elif o["type"] == "text" and o.get("style", "title") in ("title", "big"):
+                    if self.look_name == "punchy" and o.get("style") == "big":
+                        ev.append({"sound": "riser", "at": max(0, o["start"] - 1.2),
+                                   "volume": 0.4})
+                        ev.append({"sound": "boom", "at": o["start"], "volume": 0.45})
+                        continue
                     snd = "boom" if self.look_name == "editorial" else "pop"
                     ev.append({"sound": snd, "at": o["start"], "volume": 0.45})
                 elif o["type"] == "note":

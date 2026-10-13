@@ -38,7 +38,7 @@ Only `source`, `cut` and `shots` are required.
 
 ## look
 
-`explainer` (default), `editorial`, `steps` or `floating`. Sets caption
+`explainer` (default), `editorial`, `steps`, `floating` or `punchy`. Sets caption
 style, fonts, colors, grade and which sound effects are added. See
 `looks.md`. Override single text styles with `"styles": {"cap_main":
 {"size": 72, "color": "#ffffff"}}` (style names are in `scripts/looks.py`).
@@ -93,15 +93,40 @@ Types:
 | `header` | `lines` (two strings), `y` | two-line header held for the whole video (steps look) |
 | `chip` | `text`, `y` | boxed label, e.g. "STEP 1 : Voiceover"; chime on entry |
 | `note` | `text`, `y` | boxed note, e.g. "Comment 'EDIT' and I'll send it" |
+| graphic | `graphic` (a spec, below), `scale` | generated sticker/card, placed like media. No `type` needed |
+
+### Graphics
+
+`{"graphic": {"type": "receipt", "title": "Video editor", "lines": [["1 video", "$150"]], "rotate": -4}, "start": 17.2, "end": 20.5, "x": 0.25, "y": 0.2}`
+
+Made by `scripts/graphic.py` with headless Chrome, cached in
+`work/graphics/`. Sized for a 1080-wide frame; `scale` resizes. Types:
+
+| type | fields | example use |
+|---|---|---|
+| `tag` | `title`, `sub` | a tool or brand is named ("CapCut / video editor") |
+| `receipt` | `label`, `title`, `lines` ([[item, price]]) | a cost, a bill, a quote |
+| `price` | `amount`, `sub` | one big number of money ("$750 / EVERY SINGLE VIDEO") |
+| `note` | `text`, `arrow` (up-left, up-right, down-left, down-right, none), `color` | the speaker says something about themself; arrow points at the head |
+| `checklist` | `title`, `chip`, `items` | a process, steps done, features |
+| `stat` | `value`, `unit`, `label`, `color` | a big number ("100 % edited") |
+| `comment` | `text` | the comment CTA |
+| `pill` | `text`, `icon` | brand or app name with an icon letter |
+
+All take `rotate` (degrees, small tilts like -6..6 look hand-placed) and
+`accent`. Preview one alone: `python3 scripts/graphic.py '{...}' -o g.png`.
 
 ## captions
 
 From the look; any key can be overridden:
 
 - `mode`: `pop` (1-2 words, scale-in), `karaoke` (3-5 words, spoken word
-  bright, rest `dim`), `phrase` (5-6 words, fade-in).
+  bright, rest `dim`), `phrase` (5-6 words, fade-in), `punch` (2-4 small
+  words with the `emphasis` phrase on its own line, big, in `cap_emph`).
 - `max_words`, `max_chars`, `y`, `dim`.
-- `emphasis`: list of words shown in the look's accent color.
+- `emphasis`: list of words or phrases. Colored in the accent color, or in
+  `punch` mode shown big on their own line. A listed phrase is never split
+  across two captions.
 
 ## Sound
 
