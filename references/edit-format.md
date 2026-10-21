@@ -38,8 +38,8 @@ Only `source`, `cut` and `shots` are required.
 
 ## look
 
-`punchy` (default; see `playbook.md`), `explainer`, `editorial`, `steps` or
-`floating`. Sets caption
+`punchy` (default; see `playbook.md`), `explainer`, `editorial`, `steps`,
+`floating` or `aesthetic`. Sets caption
 style, fonts, colors, grade and which sound effects are added. See
 `looks.md`. Override single text styles with `"styles": {"cap_main":
 {"size": 72, "color": "#ffffff"}}` (style names are in `scripts/looks.py`).
@@ -59,12 +59,14 @@ starts at 0. The last always runs to the end (use `"end": null`).
 | `full` | `media` centered on `bg`, caption below | `media` |
 | `broll` | `media` fills the frame (cropped) | `media` |
 | `card` | big `title` and optional `sub` on `bg` | `title` |
+| `inset` | presenter in a rounded card over `bg`: a color, `"blur"`, or an image file (pattern); `w`, `x`, `y`, `aspect` (card width/height, e.g. 1.0 square), `radius`, `border`, `border_w`, `shadow`, `anim` (`shrink` from full frame, with a thud) | - |
 | `window` | presenter playing inside an app window on `bg` (cream by default), title bar with `title` and `brand`; `w`, `x`, `y` place it | - |
 
 Per-shot options:
 
 - `zoom` (talk, cutout): 1.0 = none. Default alternates 1.0 / 1.15.
 - `dim` (talk, cutout, broll): 0-1 darkening, e.g. 0.45 as the hook turns.
+- `caption_y`: move this shot's captions (0-1), e.g. 0.38 under a small inset.
 - `bg`: hex color or `"blur"` (cutout only).
 - `caption`: `main`, `alt` (the look's second caption style; serif caps in
   explainer) or `none`.
@@ -93,7 +95,8 @@ Types:
 | `text` | `text`, `style`, `size`, `color` | `\n` stacks lines tightly (`leading`, default 0.86). Styles: `title`, `title2`, `big`, `label`, `note`, `chip`, `header1`, `header2`, `cap_main`, `cap_alt` |
 | media | `media`, `w` (fraction of width), `radius` (px at 1080 wide, default 28, 0 = square), `shadow`, `media_start` | image or video. No `type` needed |
 | `prompt` | `text`, `label`, `w`, `y`, `cps` (typing speed), `box`, `accent` | chat input card that types the text, with key clicks |
-| `header` | `lines` (two strings), `y` | two-line header held for the whole video (steps look) |
+| `header` | `lines` (two or three strings), `y` | header held for the whole video (steps look); the third line is small white, e.g. a proof line |
+| `banner` | `text`, `bg`, `h`, `y`, `style` | full-width band (top by default) with a word or label |
 | `chip` | `text`, `y` | boxed label, e.g. "STEP 1 : Voiceover"; chime on entry |
 | `note` | `text`, `y` | boxed note, e.g. "Comment 'EDIT' and I'll send it" |
 | graphic | `graphic` (a spec, below), `scale` | generated sticker/card, placed like media. No `type` needed |
@@ -133,7 +136,8 @@ From the look; any key can be overridden:
 - `mode`: `pop` (1-2 words, scale-in), `karaoke` (3-5 words, spoken word
   bright, rest `dim`), `phrase` (5-6 words, fade-in), `punch` (2-4 small
   words with the `emphasis` phrase on its own line, big, in `cap_emph`).
-- `max_words`, `max_chars`, `y`, `dim`.
+- `max_words`, `max_chars`, `y`, `dim`, `gap` (punch mode line spacing; 0.6
+  makes the big word overlap the small line).
 - `emphasis`: list of words or phrases. Colored in the accent color, or in
   `punch` mode shown big on their own line. A listed phrase is never split
   across two captions.

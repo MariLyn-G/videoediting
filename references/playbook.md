@@ -72,7 +72,23 @@ stickers stack. Use the user's brand color as `accent` if they have one.
 - If the user wants music, keep it under -20 dB relative to the voice and
   drop it out for the riser.
 
-## 6. Checklist before rendering the preview
+## 6. Tactics to borrow from the other references
+
+The default look stays punchy, but these work inside it when the script
+calls for them:
+
+- **Show the thing literally** (aesthetic): if the speaker names a visual
+  action ("crop", "zoom", "split", "grid"), do it on screen at that word.
+- **Shrink to a card at a turn** (storytelling): `inset` with `"anim":
+  "shrink"` on black for 2-4 s marks "but then...", with a thud.
+- **Proof header** (storytelling): for story reels, a small proof line
+  ("1 video -> 29,518 followers") held at the top.
+- **Banner word** (aesthetic): a white top band with one word for a
+  section label or a joke.
+- **Save CTA** (aesthetic): when the content is a tip list, "save this for
+  your next [x]" instead of "comment".
+
+## 7. Checklist before rendering the preview
 
 - Does each beat have at least one visual event every 2 s?
 - Is every sticker tied to a word said within 0.3 s of its start?

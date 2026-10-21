@@ -226,6 +226,78 @@ Prompt:
 
 ---
 
+## steps, storytelling variant (reference 6, "How I script my storytelling reels", 71 s)
+
+Same creator and look as reference 2, used for a long personal story.
+Measured:
+- Header has three lines: "How I script my" / "Storytelling Reels" (gold
+  italic) / "1 video -> 29,518 followers" (small white, the proof). Held all
+  71 s.
+- One camera angle the whole time. Only about 18 visual changes in 71 s;
+  the story carries it.
+- Three times the frame shrinks into a rounded card on black for 2-4 s
+  (17 s, 43-47 s, 55-59 s) to mark a turn in the story.
+- Proof inserts: profile and analytics screenshots in the corners with a
+  small handwritten-style label ("*trial reel").
+- Captions small white serif; one phrase per beat set larger ("Main
+  Character").
+
+Sound: a soft melodic bed under the whole story; chimes at a few beats
+(about 7, 14 and 36 s); a low thud each time the frame shrinks.
+
+Skill: `header` with three `lines`; `inset` shots with `"bg": "#000000"`,
+`"anim": "shrink"` (thud is automatic); screenshots as media overlays with
+a `label` text; `"styles": {"cap_main": {...}}` for the serif captions.
+
+Prompt:
+> Use the reel-editor skill, look "steps". Header "[line 1]" / "[line 2]" /
+> "[proof line]" for the whole video. Shrink the frame into a card on black
+> at the turns of the story: when I say "[words]" and "[words]". Show
+> [screenshot.png] in the corner when I talk about [x]. Soft music.
+
+---
+
+## aesthetic (reference 5, "yapping videos", 37.5 s)
+
+Measured:
+- About 13 visual changes in 37 s, but the text moves constantly: captions
+  sit at the bottom, the middle or the top depending on the shot.
+- Captions: white lowercase sans, 2-4 words, with the key word in a big
+  cream italic serif that overlaps the small line ("your / *yapping
+  videos*", "absolute / *key moments*", "*immediately*"). Font contrast is the
+  whole look.
+- Edits shown literally as she names them: "crop yourself" shrinks the frame
+  to a small box on white, then the box moves up and a hand-drawn title
+  ("HOW TO EDIT TIPS") is sketched under it; "center yourself with a
+  dynamic grid" puts the frame on a leopard pattern with topic photos
+  popping around it.
+- A white banner across the top with a word in it ("gatekeep").
+- A small meme image pops in once for a joke.
+- Ending: "let me know if you need more" top-left, "and save this for your
+  next edit :)" at the bottom. A save CTA, not a comment CTA.
+
+Sound: a very quiet steady bed (about 27 dB under the voice) and a couple of
+accent hits on inserts (about 3 s and 5.5 s).
+
+Skill: look `aesthetic` (punch captions with a serif key word, `gap` 0.62 so
+the lines overlap); `inset` shots on white or on a pattern image (`"bg":
+"assets/pattern.jpg"`, `aspect` 1.0 for a square); `title2`/`label` in
+handwriting with `"anim": "type"`; `banner` overlays; `caption_y` per shot
+to move the captions.
+
+Record: plain wall, mid-shot, a lavalier mic. Name the thing you're
+explaining out loud ("crop yourself", "a grid") so the edit can show it.
+
+Prompt:
+> Use the reel-editor skill, look "aesthetic". Big serif key words:
+> [word], [word], [word]. When I say "[words]", shrink me into a small box
+> on white and write "[short title]" by hand under it. When I say
+> "[words]", put me in the middle of assets/[pattern].jpg with
+> assets/[photos] around me. A white banner with "[word]" when I say it.
+> End with "save this for [x]". Very quiet music.
+
+---
+
 ## Where to get sounds
 
 - Music: Epidemic Sound (what reference 2 uses), Artlist, CapCut's library,

@@ -27,8 +27,8 @@ IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 SPLIT_CARD_H = 0.46      # presenter card height in split layout
 SPLIT_MEDIA_BOX = (0.86, 0.40, 0.25)  # media box w, h, center y
 FULL_MEDIA_BOX = (0.90, 0.50, 0.40)
-CAPTION_Y = {"split": 0.495, "full": 0.70, "card": 0.70, "window": 0.66}
-GRAPHIC_LAYOUTS = {"split", "full", "broll", "card", "window"}
+CAPTION_Y = {"split": 0.495, "full": 0.70, "card": 0.70, "window": 0.66, "inset": 0.66}
+GRAPHIC_LAYOUTS = {"split", "full", "broll", "card", "window", "inset"}
 PERSON_LAYOUTS = {"talk", "cutout"}
 PUNCH_IN = 1.15
 POP = "\\fscx86\\fscy86\\t(0,90,\\fscx100\\fscy100)"
@@ -275,7 +275,7 @@ class Reel:
                 talk_n += 1
             if lay == "card":
                 default_cap = "none"
-            elif lay == "window":
+            elif lay in ("window", "inset"):
                 default_cap = "main"
             elif lay in ("full", "broll"):
                 default_cap = self.look["graphic_caption"]
@@ -288,6 +288,8 @@ class Reel:
                 s.setdefault("bg", self.look["brand"])
             elif lay == "window":
                 s.setdefault("bg", "#efece4")
+            elif lay == "inset":
+                s.setdefault("bg", "#000000")
             else:
                 s.setdefault("bg", "#ffffff")
             shots.append(s)
@@ -531,6 +533,53 @@ class Reel:
                    f"[bg1][winA]overlay={x}:{y}:shortest=1[bg2];"
                    f"[{bi}:v]scale={cw}:{bar_h},format=rgba[bar];"
                    f"[bg2][bar]overlay={x}:{y - bar_h + int(4 * self.k)}:shortest=1[v0];")
+        elif lay == "inset":
+            # The presenter in a rounded card over a color, a blurred copy, or an image.
+            asp = s.get("aspect", W / H)  # card width / height
+            cw = int(W * s.get("w", 0.82)) // 2 * 2
+            chh = int(cw / asp) // 2 * 2
+            cx, cy = W * s.get("x", 0.5), H * s.get("y", 0.5)
+            r = int(s.get("radius", 36) * self.k)
+            b = int(s.get("border_w", 0) * self.k)
+            bgv = s["bg"]
+            if bgv == "blur":
+                fc += (f"[0:v]split=2[src][bsrc];[bsrc]gblur=sigma={40 * self.k:.0f},"
+                       f"eq=brightness=-0.05[bg];")
+            elif bgv.startswith("#"):
+                fc += f"[0:v]null[src];{bg}[bg];"
+            else:
+                pi = add_input(["-loop", "1", "-i", self.path(bgv)])
+                fc += (f"[0:v]null[src];[{pi}:v]fps={fps},scale={W}:{H}:force_original_aspect_ratio="
+                       f"increase,crop={W}:{H},setsar=1[bg];")
+            # Crop the frame to the card's shape, keeping the face.
+            crop_h = f"min(ih,trunc(iw/{asp}/2)*2)"
+            crop_w = f"min(iw,trunc(ih*{asp}/2)*2)"
+            fc += (f"[src]crop='{crop_w}':'{crop_h}':'(iw-ow)/2':"
+                   f"'max(0,min(ih-oh,ih*{self.face_y}-oh*0.4))',"
+                   f"scale={cw}:{chh},setsar=1,format=rgba[c0];")
+            ki = add_input(["-loop", "1", "-i", self.mask(cw, chh, r)])
+            fc += f"[{ki}:v]format=gray,scale={cw}:{chh}[cm];[c0][cm]alphamerge[card0];"
+            card = "card0"
+            if b:
+                bi = add_input(["-loop", "1", "-i", self.mask(cw + 2 * b, chh + 2 * b, r + b)])
+                fc += (f"color=c={s.get('border', '#ffffff')}:s={cw + 2 * b}x{chh + 2 * b}:r={fps}:"
+                       f"d={pad:.3f},format=rgba[bd];[{bi}:v]format=gray,"
+                       f"scale={cw + 2 * b}:{chh + 2 * b}[bm];[bd][bm]alphamerge[bdA];"
+                       f"[bdA][{card}]overlay={b}:{b}:format=auto,format=rgba[card1];")
+                card = "card1"
+            if s.get("anim", "none") == "shrink":
+                sf = W / cw
+                fc += (f"[{card}]scale=w='trunc(iw*(1+{sf - 1:.3f}*max(0,1-t/0.3))/2)*2'"
+                       f":h=-2:eval=frame[card2];")
+                card = "card2"
+            base = "bg"
+            if s.get("shadow", is_light(bgv) if bgv.startswith("#") else True):
+                fc += (f"[{card}]split[card3][csh];[csh]colorchannelmixer=rr=0:gg=0:bb=0:aa=0.35,"
+                       f"gblur=sigma={18 * self.k:.1f}[csh2];"
+                       f"[bg][csh2]overlay=x='{cx:.0f}-w/2':y='{cy + 16 * self.k:.0f}-h/2':"
+                       f"shortest=1[bgs];")
+                card, base = "card3", "bgs"
+            fc += f"[{base}][{card}]overlay=x='{cx:.0f}-w/2':y='{cy:.0f}-h/2':shortest=1[v0];"
         else:
             sys.exit(f"unknown layout {lay!r}")
         if lay not in PERSON_LAYOUTS:
@@ -573,10 +622,23 @@ class Reel:
         st, en = o["start"] - t0, o["end"] - t0
         typ = o["type"]
         if typ == "header":
-            l1, l2 = (o.get("lines", []) + ["", ""])[:2]
+            l1, l2, l3 = (o.get("lines", []) + ["", "", ""])[:3]
             y = H * o.get("y", 0.075)
             ass.text(st, en, "header1", W / 2, y, l1, tags="\\fad(150,0)")
             ass.text(st, en, "header2", W / 2, y + 92 * k, l2, tags="\\fad(150,0)")
+            if l3:
+                ass.text(st, en, "header3", W / 2, y + 170 * k, l3, tags="\\fad(150,0)")
+            return
+        if typ == "banner":
+            # Full-width band (top by default) with text, e.g. a section label.
+            bh = H * o.get("h", 0.09)
+            y0 = H * o.get("y", 0.0)
+            ass.raw(st, en, "ui", f"\\an7\\pos(0,{y0:.0f})\\p1\\bord0\\shad0"
+                    f"\\c{tag_color(o.get('bg', '#ffffff'))}",
+                    f"m 0 0 l {W} 0 l {W} {bh:.0f} l 0 {bh:.0f}{{\\p0}}", layer=5)
+            ass.text(st, en, o.get("style", "banner"), W / 2, y0 + bh * 0.55,
+                     o.get("text", ""), tags=POP if o.get("anim", "pop") == "pop" else "",
+                     layer=6)
             return
         if typ == "prompt":
             self.prompt_box(ass, o, st, en)
@@ -724,8 +786,8 @@ class Reel:
             style = "cap_alt" if s["caption"] == "alt" else "cap_main"
             st = self.styles[style]
             lay = s["layout"]
-            y = H * (self.cap.get("y", 0.68) if lay in PERSON_LAYOUTS | {"broll"}
-                     else CAPTION_Y[lay])
+            y = H * s.get("caption_y", self.cap.get("y", 0.68) if lay in PERSON_LAYOUTS | {"broll"}
+                          else CAPTION_Y[lay])
             light_bg = lay in ("split", "full", "card") and is_light(s["bg"]) and not st.get("box")
             base = "\\shad0\\c" + tag_color("#111111") if light_bg else ""
             words = [w["w"] for w in group]
@@ -750,7 +812,7 @@ class Reel:
                 k = self.k
                 sm = self.styles[style]["size"]
                 big = self.styles["cap_emph"]["size"]
-                gap = (big * 0.47 + sm * 0.55) * k
+                gap = (big * 0.47 + sm * 0.55) * k * self.cap.get("gap", 1.0)
                 ph = find_phrase(words, self.cap.get("emphasis", []))
                 if ph is None:
                     ass.text(start, end, style, W / 2, y, " ".join(words), tags=POP + base)
@@ -783,8 +845,9 @@ class Reel:
         for s in shots:
             if s.get("text") is not None:
                 style = "cap_alt" if s["caption"] == "alt" else "cap_main"
-                y = H * (self.cap.get("y", 0.68) if s["layout"] in PERSON_LAYOUTS | {"broll"}
-                         else CAPTION_Y[s["layout"]])
+                y = H * s.get("caption_y", self.cap.get("y", 0.68)
+                              if s["layout"] in PERSON_LAYOUTS | {"broll"}
+                              else CAPTION_Y[s["layout"]])
                 dark = (s["layout"] in ("split", "full", "card") and is_light(s["bg"])
                         and not self.styles[style].get("box"))
                 ass.text(s["start"], s["end"], style, W / 2, y, s["text"],
@@ -842,6 +905,9 @@ class Reel:
                 if a["layout"] != b["layout"] and (b["layout"] in GRAPHIC_LAYOUTS
                                                    or a["layout"] in GRAPHIC_LAYOUTS):
                     ev.append({"sound": "whoosh", "at": b["start"] - 0.2, "volume": 0.3})
+            for sh in shots:
+                if sh["layout"] == "inset" and sh.get("anim") == "shrink":
+                    ev.append({"sound": "boom", "at": sh["start"], "volume": 0.3})
             for o in overlays:
                 if "sfx" in o:
                     continue

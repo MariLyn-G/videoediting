@@ -18,6 +18,8 @@ BASE_STYLES = {
     "note": dict(font="Inter ExtraBold", size=50, color="#111111", box="#ffffff", pad=16),
     "header1": dict(font="Instrument Serif", size=64, color="#ffffff", shadow=2),
     "header2": dict(font="Playfair Display", size=84, color="#f0c75e", italic=True, shadow=2),
+    "header3": dict(font="Inter Medium", size=40, color="#ffffff", shadow=2),
+    "banner": dict(font="Inter ExtraBold", size=56, color="#111111", spacing=-1),
     "cta_small": dict(font="Instrument Serif", size=96, color="#ffffff", italic=True, shadow=2),
     "cta_big": dict(font="Inter Black", size=150, color="#ffffff"),
     "card_title": dict(font="Inter Black", size=190, color="#111111"),
@@ -130,6 +132,37 @@ LOOKS["punchy"] = {
         "note": dict(font="Inter ExtraBold", size=46, color="#ffffff", box="#151515", pad=14),
         "cta_small": dict(font="Inter ExtraBold", size=52, color="#ffffff", shadow=3),
         "cta_big": dict(font="Inter Black", size=120, color="#f3d46a", shadow=3),
+    },
+}
+
+
+LOOKS["aesthetic"] = {
+    # Reference 5: "yapping videos" editing tips. White sans captions with big
+    # cream italic serif key words overlapping them, the frame shrunk into boxes
+    # on white or on a pattern with an image grid, a white top banner.
+    "captions": dict(mode="punch", max_words=4, max_chars=24, y=0.66, gap=0.62),
+    "graphic_caption": "main",
+    "accent": "#f4ead2",
+    "brand": "#ffffff",
+    "grade": "eq=saturation=0.92:gamma=1.02,colorbalance=rm=0.02:bm=-0.02",
+    "styles": {
+        "cap_main": dict(font="Inter ExtraBold", size=58, color="#ffffff", shadow=2,
+                         lower=True, spacing=-1),
+        "cap_alt": dict(font="Inter ExtraBold", size=58, color="#ffffff", shadow=2,
+                        lower=True, spacing=-1),
+        "cap_emph": dict(font="Instrument Serif", size=128, color="#f4ead2", italic=True,
+                         shadow=2, lower=True, spacing=-2),
+        "big": dict(font="Instrument Serif", size=150, color="#f4ead2", italic=True,
+                    shadow=2),
+        "title": dict(font="Instrument Serif", size=130, color="#f4ead2", italic=True,
+                      shadow=2),
+        "title2": dict(font="Caveat", size=110, color="#111111"),
+        "label": dict(font="Caveat", size=80, color="#111111"),
+        "note": dict(font="Inter ExtraBold", size=46, color="#111111", box="#ffffff", pad=12),
+        "cta_small": dict(font="Inter ExtraBold", size=54, color="#ffffff", shadow=2,
+                          lower=True),
+        "cta_big": dict(font="Instrument Serif", size=120, color="#f4ead2", italic=True,
+                        shadow=2),
     },
 }
 

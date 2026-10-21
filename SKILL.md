@@ -1,14 +1,27 @@
 ---
 name: reel-editor
-description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short. By default uses the "punchy" playbook from a reference reel - six-beat structure (hook, proof, relatable, cost, solution, comment CTA), white lowercase captions with the key word big and yellow, stickers generated from what the speaker says (tool tags, receipts, prices, handwritten notes with arrows, checklists, comment bar), angle changes, riser into the punchline. Also has explainer, editorial, steps and floating looks. Copies the tactics of references, never their content. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video like a reference.
+description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short. By default uses the "punchy" playbook from a reference reel - six-beat structure (hook, proof, relatable, cost, solution, comment CTA), white lowercase captions with the key word big and yellow, stickers generated from what the speaker says (tool tags, receipts, prices, handwritten notes with arrows, checklists, comment bar), angle changes, riser into the punchline. Also has explainer, editorial, steps (tutorials and stories), floating and aesthetic (cream serif key words, inset boxes, banners) looks. Copies the tactics of references, never their content. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video like a reference.
 ---
 
 # Reel editor
 
 Turns a talking-head recording into a finished 1080x1920 reel, adding the
-images the script calls for. Five looks, each measured from a reference
-reel. Read
-`references/looks.md` first, then `references/edit-format.md`.
+images the script calls for.
+
+**Default: the punchy playbook.** Unless the user names another look, every
+video is edited with `references/playbook.md`: six beats (hook, proof,
+relatable, problem/cost, solution, CTA), a visual event every 1-2 s,
+two-size yellow-word captions, stickers chosen by meaning, riser into the
+punchline, no music. Read it first, every time.
+
+**Copy tactics, never content.** The reference reels define how to edit,
+not what to show. Every sticker, word, number and image in a new reel comes
+from that speaker's script and files. Never reuse a reference's tools,
+prices, notes or phrases.
+
+Other looks (explainer, editorial, steps, floating, aesthetic) and their
+references are in `references/looks.md`. The edit file format is in
+`references/edit-format.md`.
 
 Scripts are in `scripts/`. They need `ffmpeg` (with libass), Python 3 and
 `pip install numpy`. Transcription needs `pip install faster-whisper`
@@ -18,7 +31,7 @@ Scripts are in `scripts/`. They need `ffmpeg` (with libass), Python 3 and
 ## What this can and can't do
 
 Reliable: silence and retake removal, reframing, word-timed captions in
-five styles, layouts, punch-ins, person cutout, text and cards behind the
+six styles, layouts, inset cards, punch-ins, person cutout, text and cards behind the
 presenter, typed prompt cards, stickers, title text, synthesized sound
 effects, music ducking, loudness to -14 LUFS.
 
