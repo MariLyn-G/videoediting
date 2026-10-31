@@ -19,6 +19,12 @@ Templates (sizes are designed for a 1080-wide frame):
 tag takes strike: true (red line through it). checklist takes done: N (first N ticked,
 the rest grey) so a sequence of cards can tick off one by one. comment takes reply
 and reply_name for a reply bubble under the bar.
+  grid       items [{image, label}]     2x2 (or 3x2) photo grid with a big word on each, an overview
+  quote      text, source               dark translucent panel with a quoted paragraph
+  section    kicker, word, color        "Plugin Number" over a highlighted italic word ("One")
+  badge      value, label               dark rounded stat, e.g. "232" / "agents available"
+  strike     width                      a red slash to lay over a logo or word
+  ctacard    text, word, sub, handle    "Comment 'Edit'" with underline, a pill subtitle, a handle
 Every template also takes: rotate (degrees), scale (1.0), color/accent overrides.
 
 Needs Chrome or Chromium. Set CHROME=/path/to/chrome if it isn't found.
@@ -43,6 +49,7 @@ FONT_FACES = {
     "Plex Mono": "IBMPlexMono-Medium.ttf", "Plex Mono Bold": "IBMPlexMono-Bold.ttf",
     "Instrument Serif": "InstrumentSerif-Regular.ttf",
     "Instrument Serif Italic": "InstrumentSerif-Italic.ttf",
+    "Anton": "Anton-Regular.ttf",
 }
 
 
@@ -253,6 +260,56 @@ def body(spec):
                 f'<span style="font:26px \'Inter ExtraBold\';color:#222">'
                 f'<span style="color:#d97757">&#10033;</span> {e(spec.get("brand", "Claude"))}'
                 f'</span></div>')
+    if t == "grid":
+        items = spec.get("items", [])
+        cols = spec.get("cols", 2)
+        cw = spec.get("cell", 500)
+        ch = int(cw * spec.get("cell_ratio", 1.25))
+        color = spec.get("color", "#f6c518")
+        cells = "".join(
+            f'<div style="position:relative;width:{cw}px;height:{ch}px;overflow:hidden;'
+            f'background:#222 url(\'file://{os.path.abspath(it["image"])}\') center/cover">'
+            f'<div style="position:absolute;top:10px;left:0;right:0;text-align:center;'
+            f'font:{int(cw * 0.22)}px Anton;color:{color};line-height:1;'
+            f'text-shadow:0 3px 0 rgba(0,0,0,.35)">{e(it.get("label", "")).upper()}</div></div>'
+            for it in items)
+        return (f'<div class="card" style="display:grid;grid-template-columns:repeat({cols},{cw}px);'
+                f'gap:6px;background:#111">{cells}</div>')
+    if t == "quote":
+        return (f'<div class="card" style="width:{spec.get("width", 960)}px;box-sizing:border-box;'
+                f'background:rgba(18,18,18,.82);padding:34px 40px;border-radius:6px">'
+                f'<div style="font:40px/1.45 \'Instrument Serif\';color:#f2f2f2">'
+                f'{e(spec.get("text", ""))}</div>'
+                + (f'<div style="font:28px \'Inter Medium\';color:#bdbdbd;margin-top:16px">'
+                   f'{e(spec["source"])}</div>' if spec.get("source") else "") + '</div>')
+    if t == "section":
+        color = spec.get("color", "#2f7df6")
+        return (f'<div class="card" style="text-align:center">'
+                f'<div style="font:66px \'Inter ExtraBold\';color:{spec.get("ink", "#111")};'
+                f'letter-spacing:-1px">{e(spec.get("kicker", ""))}</div>'
+                f'<div style="display:inline-block;margin-top:8px;background:{color};'
+                f'padding:2px 22px 8px;font:92px \'Instrument Serif Italic\';color:#fff;'
+                f'line-height:1.05">{e(spec.get("word", ""))}</div></div>')
+    if t == "badge":
+        return (f'<div class="card" style="background:rgba(28,30,34,.92);border-radius:28px;'
+                f'padding:22px 44px 26px;text-align:center;box-shadow:0 16px 36px rgba(0,0,0,.45)">'
+                f'<div style="font:150px \'Inter ExtraBold\';color:#fff;line-height:1;'
+                f'letter-spacing:-4px">{e(spec.get("value", ""))}</div>'
+                f'<div style="font:40px \'Inter Medium\';color:#e6e6e6;margin-top:4px">'
+                f'{e(spec.get("label", ""))}</div></div>')
+    if t == "strike":
+        return (f'<div class="card" style="width:{spec.get("width", 320)}px;height:16px;'
+                f'background:#e5352b;border-radius:8px;transform:rotate(-14deg);'
+                f'box-shadow:0 3px 8px rgba(0,0,0,.35)"></div>')
+    if t == "ctacard":
+        acc2 = spec.get("accent", "#e07a5f")
+        return (f'<div class="card" style="text-align:center">'
+                f'<div style="font:84px \'Inter Medium\';color:#fff;letter-spacing:-1px">'
+                f'{e(spec.get("text", "Comment"))} <span style="color:{acc2};'
+                f'border-bottom:5px solid {acc2}">&ldquo;{e(spec.get("word", ""))}&rdquo;</span></div>'
+                + (f'<div style="display:inline-block;margin-top:18px;background:{acc2};color:#111;'
+                   f'font:40px \'Inter Medium\';padding:8px 24px;border-radius:12px">'
+                   f'{e(spec["sub"])}</div>' if spec.get("sub") else "") + '</div>')
     sys.exit(f"unknown graphic type {t!r}")
 
 

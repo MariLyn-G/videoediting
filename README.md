@@ -10,6 +10,11 @@ reel in one of four styles, each measured from a reference reel:
 - `floating`: you cut out over a blurred room, app screens floating behind you
 - `aesthetic`: white captions with big cream serif key words, you shrunk into
   boxes on white or a pattern, top banners
+- `framework`: clean and minimal, no captions, each idea as a full-screen photo
+  with one giant yellow word, quotes over a dimmed frame
+- `listicle`: "N things" videos with numbered section cards, screen recordings
+  over you, stat badges, crossed-out competitors
+- `showcase`: before/after demo pairs on a dark app interface
 - `punchy` (default): white captions with the key word big and yellow,
   stickers (tool tags, receipts, prices, handwritten notes with arrows), the
   six-beat structure in `references/playbook.md`
@@ -50,7 +55,7 @@ The code environment there must have ffmpeg.
 - `SKILL.md`: workflow Claude follows
 - `references/playbook.md`: the default style's rules (structure, pacing,
   captions, stickers by meaning, sound)
-- `references/looks.md`: all six styles, their sounds, and prompts to use
+- `references/looks.md`: all nine styles, their sounds, and prompts to use
 - `references/style-guide.md`: detailed measurements of the explainer reference
 - `references/edit-format.md`: the `edit.json` format
 - `scripts/`: `transcribe.py`, `autocut.py`, `render.py`, `looks.py`,

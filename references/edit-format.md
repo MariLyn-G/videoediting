@@ -39,7 +39,7 @@ Only `source`, `cut` and `shots` are required.
 ## look
 
 `punchy` (default; see `playbook.md`), `explainer`, `editorial`, `steps`,
-`floating` or `aesthetic`. Sets caption
+`floating`, `aesthetic`, `framework`, `listicle` or `showcase`. Sets caption
 style, fonts, colors, grade and which sound effects are added. See
 `looks.md`. Override single text styles with `"styles": {"cap_main":
 {"size": 72, "color": "#ffffff"}}` (style names are in `scripts/looks.py`).
@@ -94,7 +94,7 @@ Types:
 |---|---|---|
 | `text` | `text`, `style`, `size`, `color` | `\n` stacks lines tightly (`leading`, default 0.86). Styles: `title`, `title2`, `big`, `label`, `note`, `chip`, `header1`, `header2`, `cap_main`, `cap_alt` |
 | media | `media`, `w` (fraction of width), `radius` (px at 1080 wide, default 28, 0 = square), `shadow`, `media_start` | image or video. No `type` needed |
-| `prompt` | `text`, `label`, `w`, `y`, `cps` (typing speed), `box`, `accent` | chat input card that types the text, with key clicks |
+| `prompt` | `text`, `label`, `w`, `x`, `y`, `cps` (typing speed), `box`, `accent`, `text_color`, `size` | chat input card that types the text, with key clicks |
 | `header` | `lines` (two or three strings), `y` | header held for the whole video (steps look); the third line is small white, e.g. a proof line |
 | `banner` | `text`, `bg`, `h`, `y`, `style` | full-width band (top by default) with a word or label |
 | `chip` | `text`, `y` | boxed label, e.g. "STEP 1 : Voiceover"; chime on entry |
@@ -120,6 +120,12 @@ Made by `scripts/graphic.py` with headless Chrome, cached in
 | `pill` | `text`, `icon` | brand or app name with an icon letter |
 | `timeline` | `tracks`, `playhead`, `seed` | an editing timeline (topic graphic for video/editing) |
 | `windowbar` | `title`, `brand`, `width` | app window title bar (used by the `window` layout) |
+| `grid` | `items` ([{image, label}]), `cols`, `cell`, `color` | overview of a framework: photos with one big word each |
+| `quote` | `text`, `source`, `width` | a quoted paragraph on a dark panel (pair with shot `dim`) |
+| `section` | `kicker`, `word`, `color` | numbered section card ("Plugin Number" / "One") |
+| `badge` | `value`, `label` | dark rounded stat ("232" / "agents available") |
+| `strike` | `width` | red slash to lay over a logo |
+| `ctacard` | `text`, `word`, `sub`, `accent` | dark end card: Comment "Word" underlined, pill subtitle |
 
 Extra fields: `tag` takes `strike: true` (red line through it). `checklist`
 takes `done: N` (first N ticked); place the same card with done 1, 2, 3 in
@@ -133,11 +139,13 @@ All take `rotate` (degrees, small tilts like -6..6 look hand-placed) and
 
 From the look; any key can be overridden:
 
-- `mode`: `pop` (1-2 words, scale-in), `karaoke` (3-5 words, spoken word
+- `mode`: `none` (no captions), `pop` (1-2 words, scale-in), `karaoke` (3-5 words, spoken word
   bright, rest `dim`), `phrase` (5-6 words, fade-in), `punch` (2-4 small
   words with the `emphasis` phrase on its own line, big, in `cap_emph`).
 - `max_words`, `max_chars`, `y`, `dim`, `gap` (punch mode line spacing; 0.6
   makes the big word overlap the small line).
+- `inline_emph`: true shows `emphasis` words inline in the `cap_emph` style
+  (e.g. blue italic serif) instead of just recoloring them.
 - `emphasis`: list of words or phrases. Colored in the accent color, or in
   `punch` mode shown big on their own line. A listed phrase is never split
   across two captions.
@@ -157,6 +165,15 @@ From the look; any key can be overridden:
 
 A small line over a big word: `start`, `end`, `small`, `big`, `glow`
 (color, or leave out for the look's default), `y`.
+
+## Quality
+
+Final renders use one high-quality encode (H.264 High, `crf` 16, `slow`,
+max 25 Mbit/s); every step before it is near-lossless. Sources smaller
+than 1080x1920 are upscaled with lanczos and lightly sharpened. Voice gets
+a rumble filter, light denoise and gentle compression (`"voice_polish":
+false` turns it off), and loudness is normalized in two passes. Override
+with `"quality": {"crf": 14, "preset": "slower", "maxrate": "30M"}`.
 
 ## Other
 

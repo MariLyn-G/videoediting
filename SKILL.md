@@ -1,6 +1,6 @@
 ---
 name: reel-editor
-description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short. By default uses the "punchy" playbook from a reference reel - six-beat structure (hook, proof, relatable, cost, solution, comment CTA), white lowercase captions with the key word big and yellow, stickers generated from what the speaker says (tool tags, receipts, prices, handwritten notes with arrows, checklists, comment bar), angle changes, riser into the punchline. Also has explainer, editorial, steps (tutorials and stories), floating and aesthetic (cream serif key words, inset boxes, banners) looks. Copies the tactics of references, never their content. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video like a reference.
+description: Edit raw talking-head footage into a vertical 9:16 Instagram Reel / TikTok / Short. By default uses the "punchy" playbook from a reference reel - six-beat structure (hook, proof, relatable, cost, solution, comment CTA), white lowercase captions with the key word big and yellow, stickers generated from what the speaker says (tool tags, receipts, prices, handwritten notes with arrows, checklists, comment bar), angle changes, riser into the punchline. Also has explainer, editorial, steps (tutorials and stories), floating, aesthetic (cream serif key words, inset boxes, banners), framework (clean, no captions, concept photos with giant yellow words), listicle (numbered sections, screen recordings, stat badges) and showcase (input -> output demo pairs) looks. Copies the tactics of references, never their content. Use when the user asks to edit, cut, caption or assemble a reel, short, TikTok or vertical video, or to make a video like a reference.
 ---
 
 # Reel editor
@@ -19,7 +19,8 @@ not what to show. Every sticker, word, number and image in a new reel comes
 from that speaker's script and files. Never reuse a reference's tools,
 prices, notes or phrases.
 
-Other looks (explainer, editorial, steps, floating, aesthetic) and their
+Other looks (explainer, editorial, steps, floating, aesthetic, framework,
+listicle, showcase) and their
 references are in `references/looks.md`. The edit file format is in
 `references/edit-format.md`.
 
@@ -31,7 +32,7 @@ Scripts are in `scripts/`. They need `ffmpeg` (with libass), Python 3 and
 ## What this can and can't do
 
 Reliable: silence and retake removal, reframing, word-timed captions in
-six styles, layouts, inset cards, punch-ins, person cutout, text and cards behind the
+nine styles, layouts, inset cards, punch-ins, person cutout, text and cards behind the
 presenter, typed prompt cards, stickers, title text, synthesized sound
 effects, music ducking, loudness to -14 LUFS.
 
@@ -106,14 +107,19 @@ intermediates.
    Cut and place on word boundaries. Keep text out of the bottom 15% and the
    right 12% (Instagram UI).
 
-7. **Preview.** `python3 scripts/render.py edit.json --preview`, then
+7. **Quality.** Ask for the highest-resolution source the user has (1080p
+   or 4K, not a screen recording of a reel). Photos and screenshots should
+   be at least 1080 px wide. The renderer warns when it upscales a small
+   source; pass that warning on.
+
+8. **Preview.** `python3 scripts/render.py edit.json --preview`, then
    `scripts/contact_sheet.sh out/reel_preview.mp4 work/prev.jpg 0.5` and
    look at it. Check that captions don't cover faces or graphics, behind-head
    text is readable around the head, nothing is cropped, the cutout edge is
    clean. Fix and repeat. The trimmed track and matte are cached between
    renders.
 
-8. **Final.** `python3 scripts/render.py edit.json`. Check with `ffprobe`
+9. **Final.** `python3 scripts/render.py edit.json`. Check with `ffprobe`
    and send the file and a contact sheet.
 
 ## Sound

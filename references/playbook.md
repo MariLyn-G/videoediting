@@ -88,6 +88,16 @@ calls for them:
 - **Save CTA** (aesthetic): when the content is a tip list, "save this for
   your next [x]" instead of "comment".
 
+- **Concept cards** (framework): when the speaker names a framework or a
+  list of ideas, a grid overview, then each idea full screen with a photo
+  and one giant word.
+- **Source on screen** (framework): when quoting a document or a person,
+  the quote over a dimmed frame and their photo/logo as a card.
+- **Numbered sections** (listicle): for "N things" scripts, a "Number One"
+  card at each item, with an impact sound.
+- **Before -> after pairs** (showcase): for demos, the input and the result
+  side by side, cutting back to the face between pairs.
+
 ## 7. Checklist before rendering the preview
 
 - Does each beat have at least one visual event every 2 s?

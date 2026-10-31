@@ -184,8 +184,14 @@ class Reel:
         self.k = self.H / 1920
         self.fps = self.e.get("fps", 30)
         self.preview = preview
-        self.x264 = ["-c:v", "libx264", "-preset", "ultrafast" if preview else "medium",
-                     "-crf", "23" if preview else "17", "-pix_fmt", "yuv420p"]
+        # Intermediates are near-lossless so only the final encode costs quality.
+        self.x264 = ["-c:v", "libx264", "-preset", "ultrafast" if preview else "veryfast",
+                     "-crf", "23" if preview else "10", "-pix_fmt", "yuv420p"]
+        q = self.e.get("quality", {})
+        self.x264_final = self.x264 if preview else [
+            "-c:v", "libx264", "-preset", q.get("preset", "slow"), "-crf", str(q.get("crf", 16)),
+            "-profile:v", "high", "-level", "4.2", "-pix_fmt", "yuv420p",
+            "-maxrate", q.get("maxrate", "25M"), "-bufsize", "50M", "-g", str(self.fps * 2)]
         self.face_y = self.e.get("face_y", 0.35)
         self.look_name = self.e.get("look", "punchy")
         self.look, self.styles = looks_mod.resolve(self.look_name, self.e.get("styles"))
@@ -217,12 +223,20 @@ class Reel:
     def build_aroll(self):
         grade = self.e.get("grade", self.look["grade"])
         key = [os.path.abspath(self.path(self.e["source"])), self.keep, self.W, self.H,
-               self.fps, grade, self.preview]
+               self.fps, grade, self.preview, "q2"]
         out, hit, kf, h = self._cached("aroll.mov", key)
         self.aroll, self.aroll_key = out, h
         if hit:
             print("   (reusing trimmed track)")
             return
+        # Phone footage is often 720p: upscale with lanczos and sharpen a little.
+        src = probe(self.path(self.e["source"]), "stream=width,height")["streams"][0]
+        upscale = max(self.W / src["width"], self.H / src["height"]) if src["width"] < src["height"] \
+            else self.H / src["height"]
+        sharpen = ",unsharp=5:5:0.45:5:5:0" if upscale > 1.2 and not self.preview else ""
+        if upscale > 1.6:
+            print(f"   note: source is {src['width']}x{src['height']}, upscaled {upscale:.1f}x; "
+                  "record in 1080p or 4K for a sharper result")
         parts, labels = [], []
         for i, (s, e) in enumerate(self.keep):
             d = e - s
@@ -232,8 +246,9 @@ class Reel:
                          f"afade=t=in:d={fd},afade=t=out:st={d - fd:.4f}:d={fd}[a{i}];")
             labels.append(f"[v{i}][a{i}]")
         fc = "".join(parts) + "".join(labels) + f"concat=n={len(self.keep)}:v=1:a=1[cv][ca];" \
-            f"[cv]fps={self.fps},scale={self.W}:{self.H}:force_original_aspect_ratio=increase," \
-            f"crop={self.W}:{self.H},setsar=1" + (f",{grade}" if grade else "") + "[v]"
+            f"[cv]fps={self.fps},scale={self.W}:{self.H}:force_original_aspect_ratio=increase:" \
+            f"flags=lanczos,crop={self.W}:{self.H},setsar=1" + sharpen + \
+            (f",{grade}" if grade else "") + "[v]"
         script = os.path.join(self.work, "aroll.filter")
         open(script, "w").write(fc)
         run(["ffmpeg", "-y", "-i", self.path(self.e["source"]),
@@ -508,7 +523,7 @@ class Reel:
         elif lay == "broll":
             mi = add_input(self.media_input(self.path(s["media"]), pad, s.get("media_start", 0)))
             dim = s.get("dim", 0.0)
-            fc += (f"[{mi}:v]fps={fps},scale={W}:{H}:force_original_aspect_ratio=increase,"
+            fc += (f"[{mi}:v]fps={fps},scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
                    f"crop={W}:{H},setsar=1")
             fc += f",drawbox=t=fill:c=black@{dim}[v0];" if dim else "[v0];"
         elif lay == "card":
@@ -715,7 +730,9 @@ class Reel:
         for i in range(1, n + 1):
             te = t + 1 / cps if i < n else en
             cursor = "|" if i < n or int((te - t) * 2) % 2 == 0 else ""
-            ass.raw(t, te, "ui", f"\\an4\\pos({x0 + 30 * k:.0f},{ty:.0f})\\bord0\\shad0",
+            ass.raw(t, te, "ui", f"\\an4\\pos({x0 + 30 * k:.0f},{ty:.0f})\\bord0\\shad0"
+                    f"\\c{tag_color(o.get('text_color', '#1c1c1c'))}"
+                    + (f"\\fs{int(o['size'] * k)}" if o.get("size") else ""),
                     ass_text(text[:i]) + cursor, layer=7)
             t = te
         self._typing.append((st + 0.25, n, cps))
@@ -777,6 +794,8 @@ class Reel:
     def captions(self, ass, shots):
         W, H = self.W, self.H
         mode = self.cap.get("mode", "pop")
+        if mode == "none":
+            return
         emph = {w.lower().strip(".,!?") for p in self.cap.get("emphasis", []) for w in p.split()}
         accent = self.cap.get("accent", self.look["accent"])
         dim = self.cap.get("dim", "#9a9a9a")
@@ -793,12 +812,20 @@ class Reel:
             words = [w["w"] for w in group]
             if st.get("upper"):
                 words = [w.upper() for w in words]
+            elif st.get("lower"):
+                words = [w.lower() for w in words]
 
             def colored(i_spoken):
                 parts = []
                 for j, w in enumerate(words):
                     if mode == "karaoke" and j > i_spoken:
                         parts.append("{\\c" + tag_color(dim) + "}" + ass_text(w))
+                    elif w.lower().strip(".,!?") in emph and self.cap.get("inline_emph"):
+                        es = self.styles["cap_emph"]
+                        parts.append("{\\fn" + es["font"] + ("\\i1" if es.get("italic") else "")
+                                     + f"\\fs{int(es['size'] * self.k)}\\c"
+                                     + tag_color(es["color"]) + "}" + ass_text(w)
+                                     + "{\\r}")
                     elif w.lower().strip(".,!?") in emph:
                         parts.append("{\\c" + tag_color(accent) + "}" + ass_text(w) +
                                      "{\\c" + (tag_color("#111111") if light_bg
@@ -902,6 +929,8 @@ class Reel:
         auto = self.e.get("sfx_auto", True)
         if auto:
             for a, b in zip(shots, shots[1:]):
+                if self.look_name == "framework":
+                    break
                 if a["layout"] != b["layout"] and (b["layout"] in GRAPHIC_LAYOUTS
                                                    or a["layout"] in GRAPHIC_LAYOUTS):
                     ev.append({"sound": "whoosh", "at": b["start"] - 0.2, "volume": 0.3})
@@ -911,7 +940,12 @@ class Reel:
             for o in overlays:
                 if "sfx" in o:
                     continue
-                if o["type"] == "media":
+                if o.get("graphic", {}).get("type") == "section":
+                    ev.append({"sound": "boom", "at": o["start"], "volume": 0.4})
+                    ev.append({"sound": "whoosh", "at": o["start"] - 0.2, "volume": 0.25})
+                elif o["type"] == "media" and self.look_name == "framework":
+                    continue  # the reference has no effects
+                elif o["type"] == "media":
                     ev.append({"sound": "pop", "at": o["start"], "volume": 0.4})
                 elif o["type"] == "chip":
                     ev.append({"sound": "ding", "at": o["start"], "volume": 0.3})
@@ -952,10 +986,16 @@ class Reel:
             out = out.replace(".mp4", "_preview.mp4")
         os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
 
-        inputs = ["-f", "concat", "-safe", "0", "-i", lst, "-i", self.aroll]
-        afc = "[1:a]aformat=sample_rates=48000:channel_layouts=stereo[voice];"
+        # Audio is mixed to a wav first, then loudness-normalized in two passes.
+        inputs = ["-i", self.aroll]
+        polish = ""
+        if self.e.get("voice_polish", True):
+            # Remove rumble, a little light denoise, gentle compression for an even voice.
+            polish = ("highpass=f=75,afftdn=nf=-30:tn=1,"
+                      "acompressor=threshold=-20dB:ratio=2.5:attack=8:release=160:makeup=2,")
+        afc = f"[0:a]{polish}aformat=sample_rates=48000:channel_layouts=stereo[voice];"
         mix = ["[voice]"]
-        n = 2
+        n = 1
         music = self.e.get("music")
         if music:
             inputs += ["-stream_loop", "-1", "-ss", str(music.get("start", 0)),
@@ -979,15 +1019,29 @@ class Reel:
             n += 1
         lufs = self.e.get("loudness", -14)
         if len(mix) > 1:
-            afc += "".join(mix) + f"amix=inputs={len(mix)}:duration=first:normalize=0,"
+            afc += "".join(mix) + f"amix=inputs={len(mix)}:duration=first:normalize=0[a]"
         else:
-            afc += "[voice]"
-        afc += f"loudnorm=I={lufs}:TP=-1.5:LRA=11,aresample=48000[a]"
+            afc += "[voice]anull[a]"
+        mixwav = os.path.join(self.work, "mix.wav")
+        run(["ffmpeg", "-y", *inputs, "-filter_complex", afc, "-map", "[a]",
+             "-t", f"{self.duration:.3f}", "-c:a", "pcm_s24le", mixwav])
+        ln = f"loudnorm=I={lufs}:TP=-1.5:LRA=11"
+        meas = subprocess.run(["ffmpeg", "-hide_banner", "-i", mixwav, "-af",
+                               ln + ":print_format=json", "-f", "null", "-"],
+                              capture_output=True, text=True).stderr
+        try:
+            m = json.loads(meas[meas.rindex("{"):meas.rindex("}") + 1])
+            ln += (f":measured_I={m['input_i']}:measured_TP={m['input_tp']}"
+                   f":measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}"
+                   f":offset={m['target_offset']}:linear=true")
+        except (ValueError, KeyError):
+            pass  # fall back to one-pass
 
         vfc = f"[0:v]ass='{esc_filter_path(ass)}':fontsdir='{esc_filter_path(self.fonts_dir)}'[v]"
-        run(["ffmpeg", "-y", *inputs, "-filter_complex", vfc + ";" + afc,
-             "-map", "[v]", "-map", "[a]", *self.x264, "-r", str(self.fps),
-             "-c:a", "aac", "-b:a", "192k", "-t", f"{self.duration:.3f}",
+        run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-i", mixwav,
+             "-filter_complex", f"{vfc};[1:a]{ln},aresample=48000[a]",
+             "-map", "[v]", "-map", "[a]", *self.x264_final, "-r", str(self.fps),
+             "-c:a", "aac", "-b:a", "256k", "-t", f"{self.duration:.3f}",
              "-movflags", "+faststart", out])
         return out
 

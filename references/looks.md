@@ -298,6 +298,115 @@ Prompt:
 
 ---
 
+## framework (reference 7, "An Anthropic engineer's advice", 59 s)
+
+The cleanest, most premium reference. Use it when the content is an idea or
+a framework rather than a hot take.
+
+Measured:
+- One static, well-lit talking-head shot. No captions at all.
+- A small black bold headline at the top for the first ~10 s ("An Anthropic
+  engineer's advice for getting WAY more out of AI").
+- Credibility inserts in the first 4 s: a photo of the person quoted and the
+  company's logo as rounded cards, top right.
+- The source text shown over a dimmed frame (6-7 s, 29-31 s): a paragraph
+  in a dark panel.
+- The framework: first a 2x2 grid of photos with one word each (SPEED /
+  ALTITUDE / DEPTH / RANGE), then each concept full screen for 3-4 s as it's
+  explained: an editorial photo with the word huge in yellow condensed type
+  (`#f6c518`, Anton) at the top.
+- A cut-out photo collage pops in once for an example.
+- Ending: the questions to ask yourself appear one per line at the top
+  ("Could I aim higher? / Could I go deeper? / ..."), then a plain black
+  "comment AMBITION" held to the end.
+- Slow pace: about 14 changes in 59 s; long stretches of plain talking.
+
+Sound: voice only. The audio is pure mono with no music and no effects.
+
+Skill: look `framework` (captions off, no auto effects); `headline` text;
+media cards for people/logos; `quote` graphic + shot `dim` for source text;
+`grid` graphic for the overview; `broll` shots with the concept photo +
+`concept` text; staggered `headline` texts for the questions.
+
+Quality notes: this look depends on good source material. Record in 1080p
+or 4K with soft front light; use sharp, high-resolution photos (at least
+1080 px wide) for the concept cards, all in one photographic style.
+
+Prompt:
+> Use the reel-editor skill, look "framework". Headline for the first 10 s:
+> "[headline]". Show [person.jpg] and [logo.png] when I mention them. Show
+> the quote "[text]" over a dimmed frame when I say "[words]". My framework
+> has [N] parts: [WORD1], [WORD2], [WORD3]... Show them in a grid first,
+> then each full screen with its photo from assets/ when I explain it. End
+> with my questions one by one at the top, then "comment [WORD]". No music,
+> no sound effects.
+
+---
+
+## listicle (reference 8, "4 free plugins that run your agency", 47 s)
+
+Measured:
+- Header for the first 5 s: black "4 Free Plugins That" over a blue
+  highlighted italic "Run Your Agency".
+- Each item opens with a numbered card on white: "Plugin Number" over a
+  blue box with "One" / "Two" / "Three" / "Four", the screenshot below, the
+  name under it.
+- During each item: screen recordings in the top half on a light blurred
+  background, presenter in the bottom half (split layout); white lowercase
+  captions in the middle with the key word in blue italic serif inline
+  ("run your *entire*", "with their *name*").
+- Proof numbers as dark rounded badges over the screenshot ("232 agents
+  available", "163k stars on GitHub", "+14 in a week").
+- Competitors crossed out with a red slash over their logo.
+- Ending: presenter close-up full frame, "comment 'Agency'" with a green
+  glow.
+
+Sound: a music bed under the whole video, and a low impact on each numbered
+card and on the ending (about 5, 13, 26, 34 and 43 s).
+
+Skill: look `listicle`; `header` (line 2 boxed); `section` graphic + `card`
+or `split` shots; `split` with screen recordings; `badge` graphics; `strike`
+over a logo; CTA with green glow; impacts on sections are automatic.
+
+Prompt:
+> Use the reel-editor skill, look "listicle". Header "[N] [things] That" /
+> "[promise]". For each item, a "[Item] Number One/Two/..." card when I say
+> it, then its screen recording on top while I explain. Badges for the
+> numbers I say: [number + label]. Cross out [competitor logo] when I
+> mention it. Blue words: [word], [word]. Music: assets/music.mp3. End with
+> comment "[WORD]".
+
+---
+
+## showcase (reference 9, "write this -> get this", 15 s)
+
+Measured:
+- A short demo of input -> output. Dark app UI (`#1c1c1e`): left, a small
+  card of the raw take with the typed command under it ("/business-short-
+  form-reels"); right, the finished result playing. Labels "WRITE THIS" /
+  "TO GET THIS." in small white caps on black boxes.
+- Every second it cuts back to the full-frame face and forward to the next
+  command/result pair. Five pairs in 11 s.
+- Ending: dark background, "Comment 'Edit'" with the word underlined in
+  coral, a coral pill "to get the full AI Editing Skill", the presenter in a
+  small rounded card below, the handle under it.
+
+Sound: a steady synth bed, with a short accent on each cut.
+
+Skill: look `showcase`; `inset` shots on dark for the raw take; `prompt`
+overlay with a dark box and coral text; the result as a media overlay;
+`label` text; alternating `talk` shots; `ctacard` graphic over an `inset`
+shot for the end.
+
+Prompt:
+> Use the reel-editor skill, look "showcase". Alternate my face with
+> before/after pairs: for each, my raw clip on the left with the command
+> "[command]" typed under it, and assets/[result].mp4 playing on the right,
+> labels "write this" / "to get this". [N] pairs. End on a dark card:
+> Comment "[WORD]" with "[subtitle]" and my handle @[handle].
+
+---
+
 ## Where to get sounds
 
 - Music: Epidemic Sound (what reference 2 uses), Artlist, CapCut's library,

@@ -20,6 +20,8 @@ BASE_STYLES = {
     "header2": dict(font="Playfair Display", size=84, color="#f0c75e", italic=True, shadow=2),
     "header3": dict(font="Inter Medium", size=40, color="#ffffff", shadow=2),
     "banner": dict(font="Inter ExtraBold", size=56, color="#111111", spacing=-1),
+    "headline": dict(font="Inter ExtraBold", size=50, color="#111111", spacing=-1),
+    "concept": dict(font="Anton", size=250, color="#f6c518", shadow=3),
     "cta_small": dict(font="Instrument Serif", size=96, color="#ffffff", italic=True, shadow=2),
     "cta_big": dict(font="Inter Black", size=150, color="#ffffff"),
     "card_title": dict(font="Inter Black", size=190, color="#111111"),
@@ -163,6 +165,70 @@ LOOKS["aesthetic"] = {
                           lower=True),
         "cta_big": dict(font="Instrument Serif", size=120, color="#f4ead2", italic=True,
                         shadow=2),
+    },
+}
+
+
+LOOKS["framework"] = {
+    # Reference 7: "An Anthropic engineer's advice". Clean and minimal: no
+    # captions, a small black headline, each key concept as a full-screen photo
+    # with one giant yellow word, quotes over a dimmed frame, a question build.
+    "captions": dict(mode="none"),
+    "graphic_caption": "none",
+    "accent": "#f6c518",
+    "brand": "#f4f1ec",
+    "grade": None,
+    "styles": {
+        "cap_main": dict(font="Inter ExtraBold", size=56, color="#ffffff", shadow=2),
+        "title": dict(font="Anton", size=250, color="#f6c518", shadow=3),
+        "big": dict(font="Anton", size=250, color="#f6c518", shadow=3),
+        "label": dict(font="Inter ExtraBold", size=50, color="#111111", spacing=-1),
+        "note": dict(font="Inter ExtraBold", size=50, color="#111111", spacing=-1),
+        "cta_small": dict(font="Inter ExtraBold", size=52, color="#111111"),
+        "cta_big": dict(font="Inter ExtraBold", size=52, color="#111111"),
+    },
+}
+
+LOOKS["listicle"] = {
+    # Reference 8: "4 free plugins". Numbered sections, screen recordings over
+    # the presenter, white captions with blue italic serif key words, stat badges.
+    "captions": dict(mode="pop", max_words=3, max_chars=20, y=0.52, inline_emph=True),
+    "graphic_caption": "main",
+    "accent": "#2f7df6",
+    "brand": "#f2f3f5",
+    "grade": "eq=contrast=1.04:saturation=0.95",
+    "styles": {
+        "cap_main": dict(font="Inter ExtraBold", size=60, color="#ffffff", shadow=2,
+                         lower=True, spacing=-1),
+        "cap_alt": dict(font="Inter ExtraBold", size=60, color="#ffffff", shadow=2,
+                        lower=True, spacing=-1),
+        "cap_emph": dict(font="Instrument Serif", size=70, color="#2f7df6", italic=True),
+        "header1": dict(font="Inter ExtraBold", size=62, color="#111111", spacing=-1),
+        "header2": dict(font="Instrument Serif", size=80, color="#ffffff", italic=True,
+                        box="#2f7df6", pad=8),
+        "cta_small": dict(font="Instrument Serif", size=90, color="#ffffff", italic=True),
+        "cta_big": dict(font="Inter Black", size=140, color="#ffffff", glow="#3ddc84"),
+    },
+}
+
+LOOKS["showcase"] = {
+    # Reference 9: "write this -> get this". Dark app UI: the typed command on the
+    # left, the result on the right, cutting back to the face every second; a
+    # dark end card with the comment word underlined and a pill subtitle.
+    "captions": dict(mode="pop", max_words=3, max_chars=20, y=0.70),
+    "graphic_caption": "main",
+    "accent": "#e07a5f",
+    "brand": "#1c1c1e",
+    "grade": None,
+    "styles": {
+        "cap_main": dict(font="Inter ExtraBold", size=46, color="#ffffff", box="#111111",
+                         pad=10, upper=True),
+        "cap_alt": dict(font="Inter ExtraBold", size=46, color="#ffffff", box="#111111",
+                        pad=10, upper=True),
+        "label": dict(font="Inter ExtraBold", size=44, color="#ffffff", box="#111111",
+                      pad=10, upper=True),
+        "cta_small": dict(font="Inter Medium", size=80, color="#ffffff"),
+        "cta_big": dict(font="Inter Medium", size=80, color="#e07a5f"),
     },
 }
 
