@@ -62,3 +62,9 @@ The code environment there must have ffmpeg.
   `matte.py`, `sfx.py`, `graphic.py`, `contact_sheet.sh`
 - `assets/fonts/`: Inter, Instrument Serif, Playfair Display, Nunito,
   Patrick Hand, Caveat, IBM Plex Mono (all SIL Open Font License)
+
+## CapCut
+
+`capcut/` is an MCP server that builds CapCut desktop drafts (the same tools as
+VectCutAPI) and exports any reel edit to an editable CapCut project. See
+`capcut/README.md`.

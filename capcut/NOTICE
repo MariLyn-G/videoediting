@@ -1,0 +1,13 @@
+This directory includes material from VectCutAPI
+(https://github.com/sun-guannan/VectCutAPI, commit 5ae379b),
+Copyright the VectCutAPI authors, licensed under the Apache License 2.0
+(see LICENSE.VectCutAPI):
+
+- template/ : the draft folder template (VectCutAPI's template_jianying_10_2)
+- the draft folder layout written by draft.py's save() (content file, its
+  mirrors, and the Timelines/ copy with project.json), adapted from
+  VectCutAPI's draft_profiles.py
+
+The draft content itself is built with pyJianYingDraft
+(https://github.com/GuanYixuan/pyJianYingDraft, Apache License 2.0),
+installed from PyPI as a dependency, not copied.

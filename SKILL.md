@@ -122,6 +122,13 @@ intermediates.
 9. **Final.** `python3 scripts/render.py edit.json`. Check with `ffprobe`
    and send the file and a contact sheet.
 
+10. **CapCut (when asked).** If the user wants to finish the edit in CapCut,
+    export it: `python3 capcut/export_reel.py edit.json`. This writes an
+    editable draft into CapCut's drafts folder on the computer running it
+    (cuts, text, stickers and audio as CapCut layers; complex layouts as
+    pre-rendered clips). It must run on the user's computer, where CapCut is.
+    See `capcut/README.md` for what does and doesn't carry over.
+
 ## Sound
 
 Read the sound notes for the chosen look in `looks.md`. Music is the
