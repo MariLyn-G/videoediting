@@ -49,6 +49,15 @@ if not drafts:
     fail("CapCut's drafts folder was not found. Open CapCut once, or set "
          "CAPCUT_DRAFTS_DIR to the folder shown in CapCut > Settings > Drafts")
 step(f"CapCut drafts folder: {drafts}")
+if sys.platform == "darwin":
+    running = subprocess.run(["pgrep", "-if", "CapCut.app"], capture_output=True).stdout.strip()
+    if running:
+        fail("CapCut is open. Quit it fully (in CapCut press Cmd+Q), then run this again. "
+             "CapCut overwrites its project list when it quits.")
+step("CapCut is closed")
+index = os.path.join(drafts, "root_meta_info.json")
+step("CapCut project index: " + ("found" if os.path.exists(index) else
+                                  "not found (will be created)"))
 
 tmp = tempfile.mkdtemp()
 clip = os.path.join(tmp, "test_clip.mp4")
@@ -64,6 +73,6 @@ d.add_video(clip, start=0, end=5)
 d.add_text("It works", 0.5, 3.0, y=0.25, size_px=110, color="#f3d46a", bold=True, shadow=True)
 out = d.save(drafts)
 step(f"saved draft: {out}")
-print("\nDONE. Now open CapCut (or go back to its home screen) and look for "
+print("\nDONE. Now open CapCut and look for "
       "\"reel_editor_test\". Tell Claude whether it opens and shows the clip and the "
       "yellow text \"It works\", and your CapCut version (CapCut > About CapCut).")

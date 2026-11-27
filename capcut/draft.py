@@ -308,4 +308,61 @@ class Draft:
             f.write(f"[General]\ndraft_create_time={secs}\ndraft_last_edit_time={secs}\n"
                     "real_edit_seconds=0\nreal_edit_keys=0\n"
                     f"cloud_last_modify_platform={'mac' if sys.platform == 'darwin' else 'windows'}\n")
+
+        cover = self._make_cover(out)
+        if os.path.abspath(link_dir) == os.path.abspath(drafts_dir):
+            self._register(drafts_dir, out, meta["draft_id"], now, content.get("duration", 0),
+                           cover)
         return out
+
+    def _make_cover(self, out):
+        """Thumbnail for CapCut's home screen: first frame of the first video/image."""
+        mats = list(self.script.materials.videos)
+        if not mats:
+            return None
+        src = mats[0].path
+        if not os.path.exists(src):
+            src = os.path.join(out, "Resources", "media", os.path.basename(src))
+        cover = os.path.join(out, "draft_cover.jpg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-frames:v", "1",
+                        "-vf", "scale=360:-2", cover], capture_output=True)
+        return cover if os.path.exists(cover) else None
+
+    def _register(self, drafts_dir, out, draft_id, now, duration, cover):
+        """Add the draft to root_meta_info.json, the index CapCut's home screen reads.
+        CapCut rewrites this file from memory, so it must be closed while we write."""
+        root_p = os.path.join(drafts_dir, "root_meta_info.json")
+        if os.path.exists(root_p):
+            shutil.copy2(root_p, root_p + ".before_reel_editor")
+            try:
+                root = json.load(open(root_p, encoding="utf-8"))
+            except ValueError:
+                return  # unreadable: leave CapCut's file alone
+        else:
+            root = {"all_draft_store": [], "draft_ids": 0, "root_path": drafts_dir}
+        store = root.setdefault("all_draft_store", [])
+        store[:] = [e for e in store if e.get("draft_name") != self.name]
+        sep = "\\" if os.name == "nt" else "/"
+        store.insert(0, {
+            "cloud_draft_cover": False, "cloud_draft_sync": False,
+            "draft_cloud_last_action_download": False, "draft_cloud_purchase_info": "",
+            "draft_cloud_template_id": "", "draft_cloud_tutorial_info": "",
+            "draft_cloud_videocut_purchase_info": "",
+            "draft_cover": cover or "", "draft_fold_path": out.replace("\\", "/"),
+            "draft_id": draft_id, "draft_is_ai_shorts": False,
+            "draft_is_cloud_temp_draft": False, "draft_is_infinite_canvas_draft": False,
+            "draft_is_invisible": False, "draft_is_pippit_draft": False,
+            "draft_is_web_article_video": False,
+            "draft_json_file": out + sep + "draft_content.json",
+            "draft_name": self.name, "draft_new_version": "", "draft_root_path": drafts_dir,
+            "draft_timeline_materials_size": 0, "draft_type": "",
+            "draft_web_article_video_enter_from": "", "pippit_avatar_url": "",
+            "pippit_extra_info": "", "pippit_id": "", "pippit_user_name": "",
+            "streaming_edit_draft_ready": True, "tm_draft_cloud_completed": "",
+            "tm_draft_cloud_entry_id": -1, "tm_draft_cloud_modified": 0,
+            "tm_draft_cloud_parent_entry_id": -1, "tm_draft_cloud_space_id": -1,
+            "tm_draft_cloud_user_id": -1, "tm_draft_create": now, "tm_draft_modified": now,
+            "tm_draft_removed": 0, "tm_duration": duration})
+        root["draft_ids"] = len(store)
+        with open(root_p, "w", encoding="utf-8") as f:
+            json.dump(root, f, ensure_ascii=False)
